@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/.." name="Knee">
+                <projects>
+                  <project path="$PROJECT_DIR$/.." />
+                  <project path="$PROJECT_DIR$/../knee-annotations" />
+                  <project path="$PROJECT_DIR$/../knee-compiler-plugin" />
+                  <project path="$PROJECT_DIR$/../knee-gradle-plugin" />
+                  <project path="$PROJECT_DIR$/../knee-runtime" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="jbr-17" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/.." />
+            <option value="$PROJECT_DIR$/../knee-annotations" />
+            <option value="$PROJECT_DIR$/../knee-compiler-plugin" />
+            <option value="$PROJECT_DIR$/../knee-gradle-plugin" />
+            <option value="$PROJECT_DIR$/../knee-runtime" />
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/test-classes" />
+            <option value="$PROJECT_DIR$/test-coroutines" />
+            <option value="$PROJECT_DIR$/test-imports" />
+            <option value="$PROJECT_DIR$/test-interfaces" />
+            <option value="$PROJECT_DIR$/test-misc" />
+            <option value="$PROJECT_DIR$/test-primitives" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

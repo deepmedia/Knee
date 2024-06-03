@@ -1,0 +1,46 @@
+---
+title: Enums
+---
+
+# Enums
+
+## Annotating enums
+
+Enums can be easily serialized through their ordinal value. You can use the `@KneeEnum` annotation to tell the
+compiler that:
+
+- this native enum is expected to be serialized, so a JVM clone must be generated
+- the compiler must serialize and deserialize these types whenever they are part of a [callable](../callables) declaration, e.g. a function argument or return type
+
+In the following example:
+
+```kotlin
+@KneeEnum enum class DayOfWeek {
+    Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+}
+
+@Knee fun getCurrentDay(): DayOfWeek = ...
+```
+
+Your JVM code can retrieve the current day with `getCurrentDay()` and receive a valid `DayOfWeek` instance back.
+If you wish to have a different JVM name, use the name parameter:
+
+```kotlin
+// Kotlin/Native
+@KneeEnum(name = "WeekDay") enum class DayOfWeek { ... }
+
+// Kotlin/JVM
+val currentDay: WeekDay = getCurrentDay()
+```
+
+## Importing enums
+
+If you wish to annotate existing enums that you don't control, for example those coming from a different module,
+note that you can use `@KneeEnum` on type aliases. For example:
+
+```kotlin
+@KneeEnum typealias DeprecationLevel = kotlin.DeprecationLevel
+@KneeEnum typealias BufferOverflow = kotlinx.coroutines.channels.BufferOverflow
+```
+
+If the declaration is not found on the frontend, a clone will be generated, otherwise the existing declaration will be used.

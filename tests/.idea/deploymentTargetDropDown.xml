@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="deploymentTargetDropDown">
+    <value>
+      <entry key="test-classes">
+        <State />
+      </entry>
+      <entry key="test-coroutines">
+        <State />
+      </entry>
+      <entry key="test-imports">
+        <State />
+      </entry>
+      <entry key="test-interfaces">
+        <State />
+      </entry>
+      <entry key="test-misc">
+        <State />
+      </entry>
+      <entry key="test-primitives">
+        <State />
+      </entry>
+      <entry key="testCustomException_crossInBothDirections()">
+        <State />
+      </entry>
+      <entry key="testNestedCustomException_crossInBothDirections()">
+        <State />
+      </entry>
+      <entry key="testNestedCustomException_fromJvm()">
+        <State />
+      </entry>
+      <entry key="testNestedCustomException_fromNative()">
+        <State />
+      </entry>
+    </value>
+  </component>
+</project>

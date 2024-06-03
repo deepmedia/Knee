@@ -1,0 +1,151 @@
+---
+title: Initialize
+---
+
+# Initialization
+
+Knee ships with a native runtime that deals with type conversions and other sorts of boilerplate logic,
+while also providing some nice [utilities](utilities) for low-level JNI invocations.
+
+## Init calls
+
+To do so, the runtime must be initialized with a `JniEnvironment` (a `CPointer<JNIEnvVar>`) as soon as possible
+in the application lifecycle. Any Knee-related calls that happen before initialization will likely lead to a crash.
+
+```kotlin
+val environment: CPointer<JNIEnvVar> = ...
+initKnee(environment)
+```
+
+Such a pointer can be retrieved in multiple ways.
+
+##### Using JNI_OnLoad
+
+The `JNI_OnLoad` function is called when the binary is loaded by the JVM using `System.loadLibrary`. A reference to
+the JVM is passed down as well, and it can provide an environment for Knee.
+
+```kotlin
+@CName(externName = "JNI_OnLoad")
+fun onLoad(vm: JavaVirtualMachine): Int {
+    vm.useEnv { io.deepmedia.tools.knee.runtime.initKnee(it) }
+    return 0x00010006 // JNI_VERSION_1_6
+}
+```
+
+> Use carefully: only one library can export the `JNI_OnLoad` symbol. If you are developing a library to be consumed by others,
+> this strategy is not recommended as they may have their own `JNI_OnLoad`. Prefer other strategies or [modules](#modules).
+
+##### Using JVM calls
+
+After the binary is loaded with `System.loadLibrary`, you can use any external function to invoke native code
+and a `JniEnvironment` will be passed as well. That can be handed over to Knee:
+
+```kotlin
+// Kotlin/JVM
+package com.example
+class KneeInitializer {
+    external fun initializeKnee()
+}
+
+// Kotlin/Native
+@CName(externName = "Java_com_example_KneeInitializer_initializeKnee")
+fun initializeKnee(env: JniEnvironment) {
+  io.deepmedia.tools.knee.runtime.initKnee(env)
+}
+```
+
+Note that this boilerplate (`external fun`, `@CName`...) is exactly what Knee will solve for all your other calls.
+
+## Modules
+
+All Kotlin Modules (e.g. Gradle projects) using Knee must be initialized. Knee supports module hierarchies in
+two different ways. You can pick the one you find more appropriate to your codebase.
+
+##### Initialize in every module
+
+The simplest, but verbose, way of initializing all modules is to simply call `initKnee` separately in all of them.
+This means that every module should add one [initialization call](#init-calls) and deal with Knee internally.
+
+```kotlin
+// module A, at some point...
+io.deepmedia.tools.knee.runtime.initKnee(env)
+
+// module B, at some point...
+io.deepmedia.tools.knee.runtime.initKnee(env)
+```
+
+As long as the underlying JavaVM is the same, the runtime will be able to progressively load all modules this way,
+meaning that the init call from a given module won't interfere with the one from other modules.
+
+##### Declare a KneeModule
+
+For more flexibility, libraries can avoid calling `initKnee` and declare a public object extending `io.deepmedia.tools.knee.runtime.module.KneeModule`.
+Then, the consumer module can add a module dependency in their init call or in their module definition.
+
+For example, we may have a root module, `Lib1`, an intermediate module `Lib2` depending on `Lib1`, and the application module `App`.
+In `Lib1`, simply declare a module:
+
+```kotlin
+object Lib1Module : KneeModule()
+```
+
+In `Lib2`, again, declare a module, but declare the `Lib1` dependency:
+
+```kotlin
+object Lib2Module : KneeModule(Lib1Module) // vararg
+```
+
+In the `App` module, pass the dependency to the initialization call:
+
+```kotlin
+initKnee(environment, Lib2Module) // vararg
+```
+
+This way, the initialization call will also initialize the whole graph of modules that were declared.
+It is even possible for your library to receive an initialization callback:
+
+```kotlin
+object LibModule : KneeModule({
+    initialize { environment ->
+        // Perform initialization logic (e.g. cache a jclass)
+    }
+})
+```
+
+## Exporting types
+
+Another benefit of declaring a `KneeModule` in multi-module hierarchies is **type exporting**. You will learn in [features](features)
+that Knee allows you to mark specific classes or interfaces with annotations like `@KneeClass`, `@KneeInterface`, `@KneeEnum`.
+
+The presence of that annotation allows that type to travel through the JNI interface (in both ways) seamlessly.
+
+Sometimes, when creating library modules (for example, `:Lib`), such types should also be used by dependent modules (for example, `:App`)
+and are supposed to pass through *their* JNI interface. By default this creates an error, because `:App` does not know
+how to serialize and deserialize a type declared in the dependency module `:Lib`!
+
+Knee allows you to mark such types as **exported** through the `KneeModule` builder:
+
+```kotlin
+// :Lib module
+object LibModule : KneeModule({
+    export<SomeType>()
+    export<SomeOtherType>()
+    export<SomeTypeWithGenerics<ChildType>>()
+})
+```
+
+This way you'll be able to serialize and deserialize types like `SomeType` in the app module:
+
+```kotlin
+// :App module
+
+fun initialize(env: JniEnvironment) {
+    initKnee(env, LibModule)
+}
+
+@Knee
+fun doSomething(someType: SomeType): SomeOtherType {
+   // this is now allowed!
+   ...
+}
+```

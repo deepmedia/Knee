@@ -1,0 +1,16 @@
+<manifest
+        xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+            android:label="KneeSample"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar">
+        <activity
+                android:name="io.deepmedia.tools.knee.sample.NotesActivity"
+                android:label="KneeSampleActivity"
+                android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

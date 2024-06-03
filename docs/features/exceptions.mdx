@@ -1,0 +1,76 @@
+---
+title: Exceptions
+---
+
+# Exceptions
+
+Whenever a `@Knee` [callable](../callables) throws, the exception is thrown on the other side of the bridge.
+
+```kotlin
+// Kotlin/Native
+@Knee fun throwSomething() {
+    error("Something went wrong")
+}
+
+// Kotlin/JVM
+val failure = runCatching { throwSomething() }.exceptionOrNull()
+checkNotNull(failure)
+check(failure.message == "Something went wrong")
+```
+
+## Transparency
+
+By default, exceptions are not serializable and can't pass the JNI bridge (a `jthrowable` is not a `Throwable`!).
+However, Knee strives to represents exception in the most transparent way, by reconstructing them with appropriate type
+and parameters.
+
+##### Message preservation
+
+Whenever possible, the exception `message` is preserved, as can be seen in the example above.
+
+##### Type preservation
+
+Some common types are preserved. For example, a `kotlin.coroutines.cancellation.CancellationException` in the backend
+will be re-thrown as a `java.util.concurrent.CancellationException` in the frontend.
+
+##### Instance preservation
+
+In some occasions, especially when lambdas are involved, the same exception can cross the JNI interface twice.
+Consider the following example:
+
+```kotlin
+// Native
+@KneeInterface typealias StringMapper = (String) -> String
+
+@Knee fun mapString(source: String, mapper: StringMapper): String {
+    return mapper(source)
+}
+```
+
+The JVM consumer code may try to `mapString`, but throw an exception:
+
+```kotlin
+mapString("Hello") { throw IllegalStateException("Something went wrong") }
+```
+
+In this scenario, the `IllegalStateException` is thrown from the JVM, rethrown on the K/N side when invoking `mapper`,
+and finally rethrown on the JVM side when `mapString` returns. That exception will be **exactly the same instance**,
+meaning that you could check they're the same with `===`.
+
+While this may seem useless, many commonly used functions (notably, `Flow.collectWhile`) rely on these
+checks and can only work when such mechanism is in place.
+
+## Custom exceptions
+
+You may also use custom exceptions, as long as they were properly annotated as [classes](../classes).
+
+```kotlin
+@KneeClass
+class CustomException @Knee constructor(message: String) : RuntimeException(message) {
+    @Knee
+    override val message: String? get() = super.message
+}
+```
+
+Whenever a `CustomException` is thrown inside a Knee invocation, the runtime serializes it and creates a copy
+for the other side of the JNI interface! You can also annotate other functions or properties for them to be exposed to JVM.

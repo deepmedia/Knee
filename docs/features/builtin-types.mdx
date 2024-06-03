@@ -1,0 +1,66 @@
+---
+title: Built-in types
+---
+
+# Built-in types
+
+Whenever [callables](../callables) are declared, Knee compiler's task is being able to serialize and deserialize,
+both on the backend and on the frontend:
+
+- function arguments, or the property type for setters
+- the function return type, or the property type for getters
+
+By default, Knee provides built-in support for many commonly used types, and utilities to define others
+(for example, [enums](../enums), [classes](../classes), [interfaces](../interfaces)) and even import external declarations.
+
+## Primitives
+
+Most "primitive" language types are automatically supported:
+
+- `Int` and `UInt`
+- `Long` and `ULong`
+- `Byte` and `UByte`
+- `Float`
+- `Double`
+- `Boolean`
+- `String`
+
+So the following example works out of the box:
+
+```kotlin
+@Knee fun sumAndDescribe(arg1: Int, arg2: Float, arg3: ULong): String {
+   val result = arg1.toDouble() + arg2.toDouble() + arg3.toLong().toDouble()
+   return result.toString()
+}
+```
+
+## Special return types
+
+`Unit` and `Nothing` are also supported when used as return types.
+
+## Nullable types
+
+For any type `T` - both built-ins and types annotated by the developer - Knee is also able to serialize their nullable version `T?`.
+Note that for primitive values, this comes at the well known cost of **boxing**. In the following example:
+
+```kotlin
+@Knee fun countOrNull(): Int? {
+   return if (list.isEmpty()) null else list.size
+}
+```
+The `Int?` return type will be passed as a `java.lang.Integer` / `jobject`, not a simple `jint`.
+
+## Collections
+
+For any type `T` - both built-ins and types annotated by the developer - Knee is also able to serialize some of the
+collection types which use `T` as their element type.
+
+For example, since `Int` is serializable, Knee can also serialize:
+- `IntArray`
+- `List<Int>`
+- `Set<Int>`
+
+As you may, the performance of these options is not the same because the `IntArray` signature avoids boxing.
+
+> In case of non-primitive values, `Array<Type>` will be used. That may still perform better than `List` or `Set`,
+> although not dramatically better.

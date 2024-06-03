@@ -1,0 +1,82 @@
+---
+title: Classes
+---
+
+# Classes
+
+## Annotating classes
+
+Whenever you declare a class, you can use the `@KneeClass` annotation to tell the
+compiler that it should be processed. This has a few implications that are important to understand.
+
+```kotlin
+@KneeClass class Item(@Knee val id: String)
+
+@KneeClass class Database @Knee constructor(path: String) {
+   private val directory = Directory(path)
+
+   @Knee fun loadItems(): List<Item> { ... }
+}
+```
+
+#### JVM wrappers
+
+When a class is marked as `@KneeClass`, the compiler generates source code for the JVM in which the same class exists,
+but is **a wrapper** to the underlying native instance. Using the `Database` example above, the generated JVM class
+may look something like this:
+
+```kotlin
+class Database internal constructor(private val native: Long) {
+    constructor(path: String) : this(native = NativeDatabase_init(path))
+    fun loadItems(): List<Item> = NativeDatabase_loadItems(native)
+    protected fun finalize() = NativeDatabase_deinit(native)
+}
+```
+
+You can see that:
+
+- JVM's `Database` is just a wrapper around the native `Database` instance, holding onto its native address (a `Long`)
+- When JVM's `Database` is garbage collected, the native instance is notified to avoid leaks
+
+> You can use `@KneeClass(name = "OtherName")` to modify the JVM wrapper name.
+
+#### Pass by reference
+
+It may be useful to know that `@KneeClass` objects are passed through the JNI interface using the above mentioned
+`Long` address, by reference. This means that **no data is being copied**: the source of truth remains on the native side,
+and JVM users can easily invoke its functions and use its properties thanks to Knee.
+
+#### JVM construction
+
+While **the source of truth of a class is always on the native side**, you can still let JVM users create new instances.
+This must be done explicitly by annotating one or more of the class constructors with the `@Knee` annotation.
+
+```kotlin
+@KneeClass class Post(@Knee val id: String)
+@KneeClass class User @Knee constructor(@Knee val id: String)
+```
+
+In the example above, `Post` can't be instantiated from the JVM side, while `User` can.
+
+> Even if JVM users can create instances, that doesn't mean that data lives on the JVM side. Simply, the JVM class constructor
+> will call the native class constructor under the hood, and store a reference to it.
+
+## Annotating members
+
+All callable members (functions, properties, constructors) of a class can be made available to the JVM side, but
+they must be explicitly marked with the `@Knee` annotation as described in the [callables](../callables) documentation.
+
+```kotlin
+@KneeClass class Car {
+    @Knee fun driveHome() { ... }
+    fun driveWork() { ... }
+}
+```
+
+In the example above, only the `driveHome` function will be available on the JVM side.
+
+## Importing classes
+
+If you wish to annotate existing classes that you don't control, for example those coming from a different module,
+you can technically use `@KneeClass` on type aliases. Unfortunately as of now, this functionality is very limited in that you
+can't choose which declarations will be imported.

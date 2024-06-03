@@ -1,0 +1,31 @@
+---
+title: Intro
+docs:
+  - install
+  - concepts
+  - configure
+  - initialize
+  - features
+  - utilities
+---
+
+# Intro
+
+Knee is a Kotlin compiler plugin and companion runtime tools that provides seamless communication between Kotlin/Native
+binaries and Kotlin/JVM, using a thin and efficient layer around the JNI interface.
+
+With Knee, you can write idiomatic Kotlin/Native code, annotate it and then invoke it transparently from JVM
+as if they were running on the same environment.
+
+For a brief overview of Knee's capabilities and to see sample code, we recommend checking the [features](features) page
+where you'll learn about all supported features such as:
+
+- Ability to call [functions](features/callables#functions), get or set [properties](features/callables#properties) across JNI
+- [Suspend functions](features/suspend-functions) with two-way cancellation, holding structured concurrency together
+- [Exception support](features/exceptions), including custom exception types
+- Built-in serialization of [language primitives](features/builtin-types#primitives): numbers, strings, nullables, `Unit`, `Nothing`
+- Built-in serialization of [collection types](features/builtin-types#collections): lists, sets, efficient arrays
+- Custom [enums](features/enums) and [classes](features/classes)
+- Custom [interfaces](features/interfaces) for two-way invocations
+- Lambdas and [generics](features/interfaces#importing-interfaces) support
+- [No-copy buffers](features/buffers), mapping `java.nio` buffers to `CPointer` on native

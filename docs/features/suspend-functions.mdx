@@ -1,0 +1,46 @@
+---
+title: Suspend functions
+---
+
+# Suspend Functions
+
+## Declaration
+
+All [functions](../callables#functions) that support the `@Knee` annotation can also be marked as `suspend`.
+The developer UX is exactly the same:
+
+```kotlin
+// Kotlin/Native
+@Knee suspend fun computeNumber(): Int = coroutineScope {
+    val num1 = async { loadFirstNumber() }
+    val num2 = async { loadSecondNumber() }
+    num1.await() + num2.await()
+}
+
+// Kotlin/JVM
+scope.launch {
+    val number = computeNumber()
+    println("Found number: $number")
+}
+```
+
+## Structured concurrency
+
+The underlying implementation is very complex in order to support two-way cancellation and error propagation.
+In the example above:
+
+- If the JVM `scope` is cancelled, the native coroutines are also cancelled
+- If the native coroutines are cancelled, `computeNumber` throws a `CancellationException`
+- Errors are propagated up/down and the exception type, if possible, is [preserved](../exceptions)
+
+In short, calling a `@Knee` suspend function is no different than calling a local suspend function
+and you can expect the same level of support. In particular Knee preserves the hierarchy of coroutines
+and keeps them connected across the JNI bridge.
+
+##### Context elements
+
+Knee does no attempt at preserving the `CoroutineContext`. All context element, most notably the `CoroutineDispatcher`,
+will be lost when the JNI bridge is crossed:
+
+- `@Knee` suspend functions called from K/JVM are invoked on `Dispatchers.Unconfined` on the native backend
+- `@Knee` suspend functions called from K/N are invoked on `Dispatchers.Unconfined` on the JVM frontend

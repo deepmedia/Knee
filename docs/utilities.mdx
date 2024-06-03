@@ -1,0 +1,64 @@
+---
+title: Utilities
+---
+
+# Utilities
+
+On top of providing [initialization](initialize) APIs, the `knee-runtime` package contains a thin layer of utilities
+wrapping the [JNI APIs](https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html) in a way
+that's more comfortable to Kotlin users.
+
+> The `knee-runtime` package is automatically added to your project by the Gradle Plugin.
+
+## Environment and Virtual Machine
+
+We define two handy typealiases for the common JNI entry points, `*JNIEnv` and `*JavaVM`:
+
+```kotlin
+typealias JniEnvironment = CPointer<JNIEnvVar>
+typealias JavaVirtualMachine = CPointer<JavaVMVar>
+```
+
+At any point after Knee [initialization](initialize), you can:
+
+- fetch the machine with `val machine = io.deepmedia.tools.knee.runtime.currentJavaVirtualMachine`
+- fetch the machine's environment with `val environment = machine.env`.
+
+Due to JNI design, the machine's environment will only be non-null if it was previously attached to the current thread.
+You can attach and detach the environment using regular JNI APIs, or use the `useEnv { }` utility:
+
+```kotlin
+val jvm = currentJavaVirtualMachine
+jvm.useEnv { environment ->
+    // useEnv attaches the current thread, and detaches it later
+    // unless an environment was already available, in which case it does no attach/detach
+}
+```
+
+## API wrappers
+
+Most JNI APIs are available as extension functions to `JniEnvironment` and `JavaVirtualMachine`.
+These function generally respect the original name and semantics, avoiding I/O conversions. For example:
+
+- `JniEnvironment.getBooleanField()` returns a `jboolean`, not a `Boolean`
+- `JniEnvironment.newIntArray()` returns a `jintArray`, not an `IntArray`
+
+This design choice stems from the hope that, when using Knee, you shouldn't need to deal with JNI APIs at all,
+so the wrappers can be more performant by avoiding opinionated conversions.
+
+The only exception to this rule is, well, **exceptions**: our wrappers automatically check return codes to be `JNI_OK`
+and, where appropriate, invoke `ExceptionCheck`, `ExceptionOccurred`, `ExceptionClear`, and throw a `Throwable`.
+
+As an example, this is how, given an environment, you may create a JVM object and invoke a function on it.
+
+```kotlin
+fun getClassFieldOrThrow(env: JniEnvironment): Long {
+    val objectClass: jclass = env.findClass("com/example/MyClass")
+    val objectConstructor: jmethodID = env.getMethodID(objectClass, "<init>", "()V")
+    val objectInstance: jobject = env.newObject(objectClass, objectConstructor)
+
+    val fieldMethod: jmethodID = env.getFieldId(objectClass, "myField", "J")
+    val fieldValue: Long = env.getLongField(objectInstance, fieldMethod)
+    return fieldValue
+}
+```

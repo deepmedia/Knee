@@ -1,0 +1,82 @@
+---
+title: Features
+docs:
+  - callables
+  - suspend-functions
+  - exceptions
+  - builtin-types
+  - enums
+  - classes
+  - interfaces
+  - buffers
+---
+
+# Features
+
+As described in [concepts](../concepts), to use Knee you must annotate your Kotlin/Native
+declarations and they'll be made available in Kotlin/JVM. As a general rule:
+
+- Use `@Knee` on callables functions or properties
+- Use `@KneeClass`, `@KneeInterface`, `@KneeEnum` on types (or typealiases)
+
+This way, the following Kotlin/Native code:
+
+```kotlin
+@KneeClass class User(val id: String)
+
+@KneeClass class LoggedOutException : RuntimeException()
+
+@KneeClass class Post @Knee constructor(@Knee val title: String, @Knee val author: User)
+
+@KneeInterface typealias PostSavedCallback = (Post) -> Unit
+
+@KneeClass class Database() {
+
+    private val scope: CoroutineScope = ...
+    private val disk: Disk = ...
+
+    @Knee suspend fun getCurrentUser(): User {
+       val user = disk.readCurrentUserSuspending()
+       return user ?: throw LoggedOutException()
+    }
+
+    @Knee fun savePostAsync(post: Post, callback: PostSavedCallback) {
+        scope.launch {
+            disk.writePostSuspending(post)
+            callback(post)
+        }
+    }
+}
+
+@Knee val AppDatabase: Database = ...
+```
+
+...can be seamlessly called from the JVM side - no boilerplate, no glue code, everything is handled for you:
+
+```kotlin
+suspend fun createPost(title: String): Post {
+    val user = try {
+        AppDatabase.getCurrentUser()
+    } catch (e: LoggedOutException) {
+        TODO("Handle this")
+    }
+    return Post(title, author = user)
+}
+
+fun savePost(post: Post) {
+    AppDatabase.savePostAsync(post) { savedPost ->
+        check(savedPost == post)
+    }
+}
+```
+
+We list most features supported by the Knee compiler below:
+
+- [Callables](callables) (functions and properties)
+- [Suspend functions](suspend-functions) and structured concurrency
+- [Exceptions](exceptions)
+- [Built-in](builtin-types) types (primitives, nullables, collections)
+- [Enum](enums) types
+- [Class](classes) types
+- [Interface](interfaces) types, lambdas and generics
+- [java.nio Buffers](buffers) types

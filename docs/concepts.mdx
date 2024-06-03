@@ -1,0 +1,39 @@
+---
+title: Concepts
+---
+
+# Concepts
+
+## Motivation
+
+Native and JVM binaries have historically communicated through the Java Native Interface, which is a bridge across two
+different environments and runtimes. This imposes strict restrictions about what kind of data can be passed through
+the interface and how, together with the need to write very tedious boilerplate communication code on both platforms.
+
+Additionally, when using Kotlin/Native, the developer is required to deal with verbose, low-level `kotlinx.cinterop` types
+in order to pass and receive JNI data. But Kotlin also creates an opportunity to improve communication by using the same language on the two ends of
+the bridge.
+
+Our aim with Knee is to leverage this fact and, with the power of Kotlin compiler plugins, provide a transparent, seamless
+interface between the two environments so that all the conversion boilerplate - whenever is needed - is hidden from the
+developer.
+
+## Design
+
+> **Note**: Support is currently limited to Android Native targets, where jni.h is imported by default.
+> Adding other platforms should be straightforward though, and we welcome contributions on this.
+
+In source code and documentation, you may see the following terms representing the two ends of the bridge:
+- **backend** refers to the Kotlin/Native side (code, environment, binaries)
+- **frontend** refers to the Kotlin/JVM side (code, environment, binaries)
+
+Knee is designed around the use case where the vast majority of the logic lives in the backend module,
+and the frontend is just a very thin wrapper around it. This way, developers can just **write once in the backend**.
+
+This is done via a compiler plugin and a companion runtime library, that together:
+
+- Analyze backend code, transforming it where needed and generating glue code and JNI boilerplate code
+- Generate frontend source code as `.kt` files, including all the declarations that are supposed to pass through the bridge
+- Provide runtime utilities to deal with JNI functions in general (e.g. `currentJavaVirtualMachine`)
+
+

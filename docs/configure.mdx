@@ -1,0 +1,59 @@
+---
+title: Configure
+---
+
+# Configuration
+
+Like installation, configuration of Knee settings is done via the Gradle Plugin and Gradle properties.
+The plugin will install an extension named `knee` with the following options:
+
+## Verbosity
+
+```kotlin
+knee {
+    verboseLogs.set(true) // default: false
+    verboseRuntime.set(true) // default: false
+    verboseSources.set(true) // default: false
+}
+```
+
+These three options should be used for debugging. They may also be controlled via a property in `gradle.properties`,
+using the syntax `io.deepmedia.knee.<propName>=<true|false>`.
+
+- `verboseLogs`: if enabled, the Gradle plugin will print logs to the terminal.
+- `verboseRuntime`: if enabled, the compiler plugin will inject `println()` calls at runtime for debugging.
+- `verboseSources`: if enabled, the generated frontend source files will include comments and extra elements to understand which code generated them.
+
+## Source Sets
+
+> In multiplatform projects with both backend and frontend targets,
+> you can ignore this and just use [automatic target connection](#target-connection).
+
+As described in [the concepts page](concepts), Knee analyzes your native code and generates JVM sources.
+These sources must be consumed somehow (e.g. added to your source sets).
+
+To retrieve and configure the directory, use:
+
+```kotlin
+knee {
+    generatedSourceDirectory.get() // default dir is build/knee/src
+    generatedSourceDirectory.set(layout.buildDirectory.map { it.dir("somethingElse") })
+
+    val targetSpecificDir = generatedSourceDirectory(myKotlinTarget)
+}
+```
+
+Note that the `generatedSourceDirectory` is a root directory, with one subfolder per each `KotlinNativeTarget`
+where Knee is applied.
+
+## Target Connection
+
+In Android Multiplatform projects, Knee will try to automatically bind backends with frontends:
+
+- Determine all `androidNative` targets
+- Declare debug and release binaries for them
+- Pack the binaries in a dedicated folder (`build/knee/bin`) respecting Android's `jniLibs` convention
+- Add such folder to Android Gradle Plugin and link tasks accordingly
+- Add `knee.generatedSourceDirectory` to Android Gradle Plugin source sets and link tasks accordingly
+
+This can be disabled by using `knee.connectTargets.set(true)`.

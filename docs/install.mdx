@@ -1,0 +1,47 @@
+---
+title: Install
+---
+
+# Installation
+
+Knee can be installed into your project using a Gradle Plugin.
+The plugin will take care of adding runtime dependencies, applying the Kotlin Compiler plugin and more.
+
+## Configuration
+
+To use `Knee` in your project, add the following lines:
+
+```kotlin
+// settings.gradle.kts
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+// build.gradle.kts
+plugins {
+    id("io.deepmedia.tools.knee") version "1.0.0"
+}
+```
+
+## Snapshots
+
+We regularly push development snapshots of the library at `https://s01.oss.sonatype.org/content/repositories/snapshots/`
+on each push to main. To use snapshots, add the url as a maven repository and depend on `latest-SNAPSHOT`:
+
+```kotlin
+// settings.gradle.kts
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    }
+}
+
+// build.gradle.kts
+plugins {
+    id("io.deepmedia.tools.knee") version "latest-SNAPSHOT"
+}
+```

@@ -1,0 +1,147 @@
+---
+title: Interfaces
+---
+
+# Interfaces
+
+## Annotating interfaces
+
+> We recommend reading the [classes](../classes) documentation first.
+
+Whenever you declare an interface, you can use the `@KneeInterface` annotation to tell the
+compiler that it should be processed.
+
+```kotlin
+@KneeClass class Image(val contents: String)
+
+@KneeInterface interface ImageUploadCallbacks {
+   fun imageUploadStarted(image: Image)
+   fun imageUploadCompleted(image: Image)
+}
+```
+
+Since the interface is declared on the native side but not available on the JVM, a copy of the declaration
+will be generated for the JVM sources.
+
+> You can use `@KneeInterface(name = "OtherName")` to modify the JVM name.
+
+## Two-way implementation
+
+Unlike [classes](../classes), where the implementation of members is done on the Kotlin Native side and the JVM instance
+is just a wrapper around it, `@KneeInterface` interface allow implementation from both sides. This makes it a much more
+powerful tool! You can do either of the following:
+
+- Implement the interface natively, and pass it to the JVM. You will receive a thin JVM wrapper around the native interface
+- Implement the interface on the JVM, and pass it to Kotlin Native. You will receive a thin native wrapper around the JVM interface
+
+For example, the code below is perfectly fine:
+
+
+```kotlin
+// Kotlin/Native
+@Knee fun uploadImage(image: Image, callbacks: ImageUploadCallbacks) {
+    // ... downward call
+}
+```
+
+But you may also implement interfaces natively and expose them:
+
+```kotlin
+// Kotlin/Native
+@KneeInterface interface ImageFactory {
+    fun createImage(): Image
+}
+
+@Knee val DefaultImageFactory: ImageFactory = object: ImageFactory {
+    override fun createImage(): Image = // ... upward call
+}
+```
+
+With this setup, the JVM code could do:
+
+```kotlin
+// Kotlin/JVM
+val image: Image = DefaultImageFactory.createImage() // K/JVM calls a K/N interface
+uploadImage(image, object : ImageUploadCallbacks { // K/JVM interface called by K/N
+    override fun imageUploadStarted(image: Image) { ... }
+    override fun imageUploadCompleted(image: Image) { ... }
+})
+```
+
+## Annotating members
+
+Annotating callable members (functions, properties) of an interface **is not needed**. By default, all declarations
+that are part of the interface contract will be marked as exported as if you added the `@Knee` annotation.
+
+## Importing interfaces
+
+If you wish to annotate existing interfaces that you don't control, for example those coming from a different module,
+note that you can use `@KneeInterface` on type aliases. For example:
+
+```kotlin
+@KneeInterface typealias MyInterface = SomeExternalInterface
+```
+
+You can now use `MyInterface` as a value parameter or return type of Knee functions, and pass it both ways.
+
+### Lambdas
+
+The most common use-case for imported interfaces is lambdas. In the Kotlin language, lambdas and suspend lambdas
+extend the types `FunctionN` and `SuspendFunctionN`, where N is the number of function arguments.
+
+Luckily, you don't have to refer to these types and can use the lambda syntax directly:
+
+```kotlin
+@KneeInterface typealias ImageMerger = (Image, Image) -> Image
+@KneeInterface typealias ImageFetcher = suspend (String) -> Image?
+
+@Knee suspend fun mergeImages(fetcher: ImageFetcher, id1: String, id2: String, merger: ImageMerger): Image {
+    val image1 = fetcher(id1) ?: error("Not found")
+    val image2 = fetcher(id2) ?: error("Not found")
+    return merger(image1, image2)
+}
+```
+
+> It is recommended to keep lambda typealiases `private`. Typealiases won't be available on the JVM.
+
+### Generics
+
+You may have noticed at this point that the import syntax (`@KneeInterface typealias ...`) supports generics,
+something which regular interfaces (`@KneeInterface interface ...`) don't.
+
+The ability to specialize interfaces is not restricted to external declarations. Just declare a typealias to your own interface:
+
+```kotlin
+interface EntityCallback<T> {
+    fun entityCreated(entity: T)
+    fun entityDeleted(entity: T)
+}
+
+@KneeInterface typealias ImageCallback = EntityCallback<Image>
+```
+
+You can now use `EntityCallback<Image>` as a value parameter or return type of Knee functions.
+
+### Example: flows
+
+A notable example of interface imports and generics, is the ability to import kotlinx's `Flow`.
+
+```kotlin
+// Kotlin/Native
+@KneeInterface private typealias ImagesFlow = Flow<List<Image>>
+@KneeInterface private typealias ImagesFlowCollector = FlowCollector<List<Image>>
+
+@Knee fun loadImages(): Flow<List<Image>>> = ...
+
+// Kotlin/JVM
+suspend fun loadImage(id: String): Flow<Image?> {
+   return loadImages().map { list ->
+       list.firstOrNull { image -> image.id == id }
+   }
+}
+```
+
+Note that since `Flow<T>` refers to `FlowCollector<T>`, we must also manually import the collector as well.
+
+You may use the same strategy to import `StateFlow`, `SharedFlow`, their `Mutable*` version, or really any other
+interface that you can think of, as long as all types are correctly imported.

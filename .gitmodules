@@ -1,0 +1,3 @@
+[submodule "dependencies/jdk17"]
+	path = dependencies/jdk17
+	url = https://android.googlesource.com/platform/prebuilts/jdk/jdk17

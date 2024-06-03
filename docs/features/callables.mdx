@@ -1,0 +1,62 @@
+---
+title: Callables
+---
+
+# Callables
+
+We refer to functions and properties as *callables*. When appropriately annotated, callables can be invoked from
+either side of the JNI interface (frontend or backend), execute your code on the other side and return some value.
+
+## Functions
+
+For a function to be available on the JVM side, it must be annotated with the `@Knee` annotation.
+We support top-level functions and functions nested in `@KneeClass` declarations, as you can learn in [classes](../classes).
+Upward functions (called from K/N, implemented on the JVM) are also available through [interfaces](../interfaces).
+
+```kotlin
+// Kotlin/Native
+@Knee fun topLevelFunction(): Int {
+    return 42
+}
+
+// Kotlin/JVM
+check(topLevelFunction() == 42)
+```
+
+If you wish to have a different JVM name, use the name parameter:
+
+```kotlin
+// Kotlin/Native
+@Knee(name = "prettyName") fun uglyName(): Unit = ...
+
+// Kotlin/JVM
+prettyName()
+```
+
+## Properties
+
+For a property to be available on the JVM side, it must be annotated with the `@Knee` annotation.
+We support top-level properties and properties nested in `@KneeClass` declarations, as you can learn in [classes](../classes).
+Upward properties (called from K/N, implemented on the JVM) are also available through [interfaces](../interfaces).
+
+Both `var` and `val` properties are supported.
+
+```kotlin
+// Kotlin/Native
+@Knee val immutableProp: Int = 42
+@Knee var mutableProp: Int = 0
+
+// Kotlin/JVM
+mutableProp = immutableProp
+check(mutableProp == immutableProp)
+```
+
+If you wish to have a different JVM name, use the name parameter:
+
+```kotlin
+// Kotlin/Native
+@Knee(name = "prettyName") val uglyName: Int get() = ...
+
+// Kotlin/JVM
+val prettyValue = prettyName
+```

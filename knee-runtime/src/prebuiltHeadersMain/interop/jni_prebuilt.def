@@ -1,0 +1,2 @@
+headers = jni.h
+headerFilter = jni.h jni_md.h

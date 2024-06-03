@@ -1,0 +1,70 @@
+---
+title: Buffers
+---
+
+# Buffers
+
+## Definition
+
+When dealing with memory and buffers, you may at some point need to pass them through the Native/JVM interface
+efficiently by reference, avoiding copies especially as their size grows.
+
+Knee provides a built-in solution for this problem based on `java.nio` direct buffers and their native counterparts
+defined by the `knee-runtime` package. You can use:
+
+- A direct `java.nio.ByteBuffer` on the JVM and `io.deepmedia.tools.knee.runtime.buffer.ByteBuffer` on native;
+- A direct `java.nio.DoubleBuffer` on the JVM and `io.deepmedia.tools.knee.runtime.buffer.DoubleBuffer` on native;
+- A direct `java.nio.FloatBuffer` on the JVM and `io.deepmedia.tools.knee.runtime.buffer.FloatBuffer` on native;
+- A direct `java.nio.IntBuffer` on the JVM and `io.deepmedia.tools.knee.runtime.buffer.IntBuffer` on native;
+- A direct `java.nio.LongBuffer` on the JVM and `io.deepmedia.tools.knee.runtime.buffer.LongBuffer` on native.
+
+Whenever such buffers are used as parameters or return types for Knee functions, the runtime will convert between the two.
+
+### Memory leaks
+
+Native buffers are just thin wrappers around a `CPointer`. Should you choose to allocate such buffers on the native side
+(see [examples](#examples)), you **must free them after use**, using `buffer.free()`.
+
+> Natively allocated buffers are usable on the JVM only until the `buffer.free()` call
+
+This requirement is lifted when buffers are allocated on the JVM side and passed down. In this case, buffers will
+keep a strong reference to the `java.nio.ByteBuffer`, so memory will be reclaimed only when all buffers (on both sides!)
+go out of scope and are garbage collected.
+
+## Examples
+
+##### Allocate on JVM, pass down
+
+```kotlin
+// JVM
+val buffer = java.nio.ByteBuffer.allocateDirect(1024)
+fillBuffer(buffer)
+
+// Native
+@Knee fun fillBuffer(buffer: io.deepmedia.tools.knee.runtime.buffer.ByteBuffer) {
+    check(buffer.size == 1024)
+    val rawPointer: CArrayPointer<ByteVar> = buffer.ptr
+    // Fill rawPointer...
+}
+```
+
+##### Allocate natively, pass up
+
+```kotlin
+// JVM
+useBuffer(1024) { buffer: java.nio.ByteBuffer ->
+   check(buffer.capacity == 1024)
+   // Use it...
+}
+
+// Native
+@Knee fun useBuffer(size: Int, block: (io.deepmedia.tools.knee.runtime.buffer.ByteBuffer) -> Unit) {
+    val environment = currentJavaVirtualMachine.env!!
+    val buffer = io.deepmedia.tools.knee.runtime.buffer.ByteBuffer(environment, size)
+    try {
+        block(buffer)
+    } finally {
+        buffer.free()
+    }
+}
+```
