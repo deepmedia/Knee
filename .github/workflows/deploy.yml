@@ -3,7 +3,7 @@ on:
   release:
     types: [published]
 jobs:
-  SONATYPE_UPLOAD:
+  DEPLOY:
     name: Sonatype Upload
     runs-on: ubuntu-latest
     env:
