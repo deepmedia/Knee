@@ -15,7 +15,7 @@ subprojects {
     // Publishing
     plugins.withId("io.deepmedia.tools.deployer") {
         extensions.configure<DeployerExtension> {
-            verbose.set(true)
+            verbose.set(false)
 
             projectInfo {
                 description.set("A Kotlin Compiler Plugin for seamless communication between Kotlin/Native and Kotlin/JVM.")
