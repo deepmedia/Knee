@@ -50,7 +50,7 @@ subprojects {
 
             // use "deployGithub" to deploy to github packages
             githubSpec {
-                repository.set("MavenDeployer")
+                repository.set("Knee")
                 owner.set("deepmedia")
                 auth {
                     user.set(secret("GHUB_USER"))
