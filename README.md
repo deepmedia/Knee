@@ -1,4 +1,4 @@
-[![Build Status](https://github.com/deepmedia/Knee/workflows/Build/badge.svg?event=push)](https://github.com/deepmedia/Knee/actions)
+[![Build Status](https://github.com/deepmedia/Knee/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/deepmedia/Knee/actions)
 [![Release](https://img.shields.io/github/release/deepmedia/Knee.svg)](https://github.com/deepmedia/Knee/releases)
 [![Issues](https://img.shields.io/github/issues-raw/deepmedia/MavenDeployer.svg)](https://github.com/deepmedia/Knee/issues)
 
