@@ -21,6 +21,6 @@ jobs:
           distribution: temurin
           cache: gradle
       - name: Publish to Sonatype
-        run: ./gradlew deploySonatype --no-parallel
+        run: ./gradlew deploySonatype
       - name: Publish to GitHub Packages
         run: ./gradlew deployGithub

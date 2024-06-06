@@ -1,5 +1,5 @@
 import io.deepmedia.tools.deployer.DeployerExtension
-import io.deepmedia.tools.deployer.impl.SonatypeAuth
+import io.deepmedia.tools.deployer.specs.SonatypeAuth
 
 plugins {
     kotlin("multiplatform") apply false
@@ -15,7 +15,7 @@ subprojects {
     // Publishing
     plugins.withId("io.deepmedia.tools.deployer") {
         extensions.configure<DeployerExtension> {
-            verbose.set(false)
+            verbose.set(true)
 
             projectInfo {
                 description.set("A Kotlin Compiler Plugin for seamless communication between Kotlin/Native and Kotlin/JVM.")
@@ -35,6 +35,7 @@ subprojects {
 
             // use "deploySonatype" to deploy to OSSRH / maven central
             sonatypeSpec {
+                syncToMavenCentral = true
                 auth.user.set(secret("SONATYPE_USER"))
                 auth.password.set(secret("SONATYPE_PASSWORD"))
             }

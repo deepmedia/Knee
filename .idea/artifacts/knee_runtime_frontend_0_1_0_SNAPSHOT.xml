@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="knee-runtime-frontend-0.1.0-SNAPSHOT">
-    <output-path>$PROJECT_DIR$/knee-runtime/build/libs</output-path>
-    <root id="archive" name="knee-runtime-frontend-0.1.0-SNAPSHOT.jar">
-      <element id="module-output" name="Knee.knee-runtime.frontendMain" />
-    </root>
-  </artifact>
-</component>
