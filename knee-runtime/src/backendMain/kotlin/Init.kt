@@ -15,7 +15,7 @@ internal var initializationData: InitializationData? = null
 
 internal class InitializationData(
     val jvm: JavaVirtualMachine,
-    val exceptions: Set<SerializableException>
+    val exceptions: MutableSet<SerializableException>
 )
 
 fun initKnee(environment: JniEnvironment, vararg modules: KneeModule) {
@@ -23,16 +23,16 @@ fun initKnee(environment: JniEnvironment, vararg modules: KneeModule) {
     val id = vm.rawValue.toLong()
     val oldId = kneeInitialized.getAndSet(id)
     if (id != oldId) {
-        val exceptions = mutableSetOf<SerializableException>()
-        modules.forEach { it.collectExceptions(exceptions) }
-        initializationData = InitializationData(vm, exceptions)
+        initializationData = InitializationData(vm, mutableSetOf())
         initSuspend(environment)
         initInstances(environment)
         initBoxMethods(environment)
         initExceptions(environment)
         initBuffers(environment)
     }
+    val data = initializationData!!
     modules.forEach {
+        it.collectExceptions(data.exceptions)
         it.initializeIfNeeded(environment)
     }
 }

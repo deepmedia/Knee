@@ -152,6 +152,9 @@ sealed class InitInfo {
     val serializableExceptions = mutableSetOf<IrClass>()
     fun serializableException(klass: IrClass) {
         serializableExceptions.add(klass) // can't be exported
+        // Since throwing JVM exception can be needed at any point in the KN lifecycle,
+        // we must preload them otherwise runtime may fail to find the class in the given environment.
+        preloads.add(klass.defaultType)
     }
 
     val registerNativesEntries = mutableListOf<RegisterNativesEntry>()
