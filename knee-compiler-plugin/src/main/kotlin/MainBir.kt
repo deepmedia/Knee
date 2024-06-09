@@ -78,12 +78,6 @@ private fun process(context: KneeContext, codegen: KneeCodegen) {
     processInit(info = initInfo, context = context, codegen = codegen)
     context.log.logMessage("[*] Writing generated code in ${codegen.root.absolutePath}")
     codegen.write()
-
-    /* val exportedData = (data.allEnums + data.allInterfaces + data.allClasses).joinToString {
-        it.source.defaultType.toString()
-    }
-    context.log.print("[*] Exporting data: $exportedData") */
-
 }
 
 private inline fun <T: KneeFeature<*>> List<T>.processEach(context: KneeContext, block: (T) -> Unit) {
