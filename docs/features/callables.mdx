@@ -23,16 +23,6 @@ Upward functions (called from K/N, implemented on the JVM) are also available th
 check(topLevelFunction() == 42)
 ```
 
-If you wish to have a different JVM name, use the name parameter:
-
-```kotlin
-// Kotlin/Native
-@Knee(name = "prettyName") fun uglyName(): Unit = ...
-
-// Kotlin/JVM
-prettyName()
-```
-
 ## Properties
 
 For a property to be available on the JVM side, it must be annotated with the `@Knee` annotation.
@@ -49,14 +39,4 @@ Both `var` and `val` properties are supported.
 // Kotlin/JVM
 mutableProp = immutableProp
 check(mutableProp == immutableProp)
-```
-
-If you wish to have a different JVM name, use the name parameter:
-
-```kotlin
-// Kotlin/Native
-@Knee(name = "prettyName") val uglyName: Int get() = ...
-
-// Kotlin/JVM
-val prettyValue = prettyName
 ```
