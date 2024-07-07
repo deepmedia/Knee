@@ -10,8 +10,8 @@ either side of the JNI interface (frontend or backend), execute your code on the
 ## Functions
 
 For a function to be available on the JVM side, it must be annotated with the `@Knee` annotation.
-We support top-level functions and functions nested in `@KneeClass` declarations, as you can learn in [classes](../classes).
-Upward functions (called from K/N, implemented on the JVM) are also available through [interfaces](../interfaces).
+We support top-level functions and functions nested in `@KneeClass` declarations, as you can learn in [classes](classes).
+Upward functions (called from K/N, implemented on the JVM) are also available through [interfaces](interfaces).
 
 ```kotlin
 // Kotlin/Native
@@ -26,8 +26,8 @@ check(topLevelFunction() == 42)
 ## Properties
 
 For a property to be available on the JVM side, it must be annotated with the `@Knee` annotation.
-We support top-level properties and properties nested in `@KneeClass` declarations, as you can learn in [classes](../classes).
-Upward properties (called from K/N, implemented on the JVM) are also available through [interfaces](../interfaces).
+We support top-level properties and properties nested in `@KneeClass` declarations, as you can learn in [classes](classes).
+Upward properties (called from K/N, implemented on the JVM) are also available through [interfaces](interfaces).
 
 Both `var` and `val` properties are supported.
 

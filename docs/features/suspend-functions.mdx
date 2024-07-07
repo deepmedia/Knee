@@ -6,7 +6,7 @@ title: Suspend functions
 
 ## Declaration
 
-All [functions](../callables#functions) that support the `@Knee` annotation can also be marked as `suspend`.
+All [functions](callables#functions) that support the `@Knee` annotation can also be marked as `suspend`.
 The developer UX is exactly the same:
 
 ```kotlin
@@ -31,7 +31,7 @@ In the example above:
 
 - If the JVM `scope` is cancelled, the native coroutines are also cancelled
 - If the native coroutines are cancelled, `computeNumber` throws a `CancellationException`
-- Errors are propagated up/down and the exception type, if possible, is [preserved](../exceptions)
+- Errors are propagated up/down and the exception type, if possible, is [preserved](exceptions)
 
 In short, calling a `@Knee` suspend function is no different than calling a local suspend function
 and you can expect the same level of support. In particular Knee preserves the hierarchy of coroutines
