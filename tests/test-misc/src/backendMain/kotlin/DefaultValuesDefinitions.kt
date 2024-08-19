@@ -19,3 +19,7 @@ interface BaseInterfaceWithDefaultValues {
 
     }
 }
+
+@Knee
+fun emptyStringDefaultValue(foo: String = "") {
+}
