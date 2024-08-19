@@ -21,4 +21,9 @@ class DefaultValuesTests {
         ConcreteClassWithDefaultValues().withNull()
     }
 
+    @Test
+    fun testDefaultValue_emptyString() {
+        emptyStringDefaultValue()
+    }
+
 }
