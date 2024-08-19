@@ -40,7 +40,7 @@ fun Codec.collectionCodecs(
  * - jni type is jobject <-> kotlin.String  [StringCodec.encodedType]
  * - local codegen type is kotlin.String    [StringCodec.localCodegenType]
  *
- * First of all, the jni representation of a collection of strings is [JniType.Array].
+ * First of all, the jni representation of a collection of strings is [JniType.Object].
  * This is determined automatically by [JniType.Object.array].
  *
  * Then the mapper must decode a jobjectArray into a List/Set/Array/Sequence of strings. This
@@ -59,7 +59,7 @@ fun Codec.collectionCodecs(
 // TODO: revisit - when elementCodec does transform, we create a new instance of transforming helper at every encode decode!
 // TODO:           also for a function say foo(List<Foo>): List<Foo>, we create it twice, one for the param and one for return
 // TODO: wrap in KneeMapper instead of using withCollectionCodecs()
-class CollectionCodec constructor(
+class CollectionCodec(
     private val context: KneeContext,
     private val elementCodec: Codec,
     private val collectionKind: CollectionKind
@@ -67,9 +67,8 @@ class CollectionCodec constructor(
     localIrType = collectionKind.getCollectionTypeOf(elementCodec.localIrType, context.symbols),
     localCodegenType = collectionKind.getCollectionTypeOf(elementCodec.localCodegenType, context.symbols),
     encodedType = when (val type = elementCodec.encodedType) {
-        is JniType.Primitive -> type.array(context.symbols)
-        is JniType.Object -> type.array(context.symbols)
-        else -> error("Unsupported element type: $type")
+        is JniType.Real -> type.array(context.symbols)
+        is JniType.Void -> error("CollectionCodec<Void> is not supported.")
     }
 ) {
     /**
@@ -77,9 +76,9 @@ class CollectionCodec constructor(
      * We have two different implementations based on whether the encoded type is a primitive or not.
      */
     private val runtimeHelperClassRaw: IrClass = when (val type = elementCodec.encodedType) {
+        is JniType.Void -> error("Void is not allowed here.")
         is JniType.Primitive -> context.symbols.klass(PrimitiveCollectionCodec(type.knSimpleName)).owner
         is JniType.Object -> context.symbols.klass(JObjectCollectionCodec).owner
-        else -> error("Not possible")
     }
 
     /**
@@ -93,11 +92,11 @@ class CollectionCodec constructor(
 
     private fun IrBuilderWithScope.irGetOrCreateHelperRaw(): IrDeclarationReference {
         return when (val type = elementCodec.encodedType) {
+            is JniType.Void -> error("Void is not allowed here.")
             is JniType.Primitive -> irGetObject(runtimeHelperClassRaw.symbol)
             is JniType.Object -> irCallConstructor(runtimeHelperClassRaw.primaryConstructor!!.symbol, emptyList()).apply {
                 putValueArgument(0, irString(type.jvm.jvmClassName))
             }
-            else -> error("Should not happen")
         }
     }
 
@@ -118,6 +117,7 @@ class CollectionCodec constructor(
             // Return type of this is symbols.klass(runtimeArraySpecClass)
             // .typeWith(CollectionKind.Array.getCollectionType(elementCodec.localType, symbols), elementCodec.localType)
             putValueArgument(1, when (val type = elementCodec.encodedType) {
+                is JniType.Void -> error("Void is not allowed here.")
                 is JniType.Primitive -> {
                     val name = PrimitiveArraySpec(type.jvmSimpleName)
                     irGetObject(this@CollectionCodec.context.symbols.klass(name))
@@ -128,7 +128,6 @@ class CollectionCodec constructor(
                         putTypeArgument(0, type.kn)
                     }
                 }
-                else -> error("Not possible")
             })
             // Constructor param: Source --> Transformed decoding lambda
             putValueArgument(2, irLambda(
@@ -220,9 +219,9 @@ class CollectionCodec constructor(
 
     override fun CodeBlock.Builder.codegenEncode(codegenContext: CodegenCodecContext, local: String): String {
         val arrayName = when (val type = elementCodec.encodedType) {
+            is JniType.Void -> error("Void is not allowed here.")
             is JniType.Primitive -> type.jvmSimpleName
             is JniType.Object -> "Typed"
-            else -> error("Not possible")
         }
 
         return when (elementCodec.needsCodegenConversion) {

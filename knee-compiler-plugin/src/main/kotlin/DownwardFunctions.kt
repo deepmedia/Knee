@@ -234,7 +234,6 @@ private fun KneeDownwardFunction.makeIr(context: KneeContext, signature: Downwar
                                     +when (val type = signature.result.encodedType) {
                                         is JniType.Void -> irUnit()
                                         is JniType.Object -> irNull()
-                                        is JniType.Array -> irNull()
                                         is JniType.Int -> irInt(0)
                                         is JniType.Long -> irLong(0)
                                         is JniType.Float -> IrConstImpl.float(startOffset, endOffset, type.kn, 0F)

@@ -47,7 +47,6 @@ class GenericCodec(
 
         return when (wrappedType) {
             is JniType.Object -> data // already a jobject
-            is JniType.Array -> data // already a jobject
             is JniType.Long -> irEncodeBoxed("Long")
             is JniType.Int -> irEncodeBoxed("Int")
             is JniType.Double -> irEncodeBoxed("Double")
@@ -66,7 +65,6 @@ class GenericCodec(
 
         val decoded = when (wrappedType) {
             is JniType.Object -> irGet(jni) // irAs(irGet(jni), wrappedType.kn)
-            is JniType.Array -> irGet(jni) // irAs(irGet(jni), wrappedType.kn)
             is JniType.Long -> irDecodeBoxed("Long")
             is JniType.Int -> irDecodeBoxed("Int")
             is JniType.Double -> irDecodeBoxed("Double")
