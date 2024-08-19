@@ -60,7 +60,10 @@ For example, since `Int` is serializable, Knee can also serialize:
 - `List<Int>`
 - `Set<Int>`
 
-As you may, the performance of these options is not the same because the `IntArray` signature avoids boxing.
+As you may know, the performance of these options is not the same because the `IntArray` signature avoids boxing.
 
 > In case of non-primitive values, `Array<Type>` will be used. That may still perform better than `List` or `Set`,
 > although not dramatically better.
+
+Note that since you can serialize collections of any serializable type, and collections themselves are serializable,
+nested types are supported. For example, you may pass things like `List<Set<Float>>`, `Set<IntArray>` or `Array<Array<MyObject>>`.
