@@ -47,16 +47,16 @@ object JniSignature {
             is JniType.Double -> append('D')
 
             // OBJECT TYPES
-            is JniType.Object -> {
-                append('L')
-                append(type.jvm.jvmClassName) // cares about dollar signs
-                append(';')
-            }
-
-            // ARRAY TYPES
-            is JniType.Array -> {
-                append("[")
-                appendJniType(type.element, isReturnType)
+            is JniType.Object -> when (val arrayElement = type.arrayElement) {
+                null -> {
+                    append('L')
+                    append(type.jvm.jvmClassName) // cares about dollar signs
+                    append(';')
+                }
+                else -> {
+                    append("[")
+                    appendJniType(arrayElement, isReturnType)
+                }
             }
         }
     }

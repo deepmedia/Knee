@@ -73,7 +73,7 @@ object UpwardFunctionsIr {
     private val JniType.nameOfCallMethodFunction: String get() {
         return when (this) {
             is JniType.Void -> "Void"
-            is JniType.Object, is JniType.Array -> "Object"
+            is JniType.Object -> "Object"
             is JniType.Int -> "Int"
             is JniType.BooleanAsUByte -> "Boolean"
             is JniType.Float -> "Float"

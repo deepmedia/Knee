@@ -37,6 +37,8 @@ sealed interface JniType {
     sealed interface Real : JniType {
         val kn: IrSimpleType
         val jvm: CodegenType
+        val jvmArray: CodegenType
+        fun array(symbols: KneeSymbols): Object = Object.array(symbols, jvmArray, this)
     }
 
     @Serializable
@@ -45,52 +47,41 @@ sealed interface JniType {
         // E.g. for JniType.Boolean, jvm = "Boolean" and kn = "UByte"
         val jvmSimpleName get() = jvm.name.simpleName
         val knSimpleName get() = kn.let { CodegenType.from(it) }.name.simpleName
-        fun array(symbols: KneeSymbols): Array
     }
 
     @Serializable
     class Int private constructor(@Contextual override val kn: IrSimpleType) : Primitive {
         constructor(symbols: KneeSymbols) : this(kn = symbols.builtIns.intType as IrSimpleType)
         override val jvm get() = CodegenType.from(INT)
-        override fun array(symbols: KneeSymbols): Array {
-            return Array(symbols, CodegenType.from(INT_ARRAY), Int(symbols))
-        }
+        override val jvmArray get() = CodegenType.from(INT_ARRAY)
     }
 
     @Serializable
     class Float private constructor(@Contextual override val kn: IrSimpleType) : Primitive {
         constructor(symbols: KneeSymbols) : this(kn = symbols.builtIns.floatType as IrSimpleType)
         override val jvm get() = CodegenType.from(FLOAT)
-        override fun array(symbols: KneeSymbols): Array {
-            return Array(symbols, CodegenType.from(FLOAT_ARRAY), Float(symbols))
-        }
+        override val jvmArray get() = CodegenType.from(FLOAT_ARRAY)
     }
 
     @Serializable
     class Double private constructor(@Contextual override val kn: IrSimpleType) : Primitive {
         constructor(symbols: KneeSymbols) : this(kn = symbols.builtIns.doubleType as IrSimpleType)
         override val jvm get() = CodegenType.from(DOUBLE)
-        override fun array(symbols: KneeSymbols): Array {
-            return Array(symbols, CodegenType.from(DOUBLE_ARRAY), Double(symbols))
-        }
+        override val jvmArray get() = CodegenType.from(DOUBLE_ARRAY)
     }
 
     @Serializable
     class Long private constructor(@Contextual override val kn: IrSimpleType) : Primitive {
         constructor(symbols: KneeSymbols) : this(kn = symbols.builtIns.longType as IrSimpleType)
         override val jvm get() = CodegenType.from(LONG)
-        override fun array(symbols: KneeSymbols): Array {
-            return Array(symbols, CodegenType.from(LONG_ARRAY), Long(symbols))
-        }
+        override val jvmArray get() = CodegenType.from(LONG_ARRAY)
     }
 
     @Serializable
     class Byte private constructor(@Contextual override val kn: IrSimpleType) : Primitive {
         constructor(symbols: KneeSymbols) : this(kn = symbols.builtIns.byteType as IrSimpleType)
         override val jvm get() = CodegenType.from(BYTE)
-        override fun array(symbols: KneeSymbols): Array {
-            return Array(symbols, CodegenType.from(BYTE_ARRAY), Byte(symbols))
-        }
+        override val jvmArray get() = CodegenType.from(BYTE_ARRAY)
     }
 
     // The name makes it immediately clear that the types at the two ends are different
@@ -98,31 +89,28 @@ sealed interface JniType {
     class BooleanAsUByte private constructor(@Contextual override val kn: IrSimpleType) : Primitive {
         constructor(symbols: KneeSymbols) : this(kn = symbols.klass(KotlinIds.UByte).defaultType as IrSimpleType)
         override val jvm get() = CodegenType.from(BOOLEAN)
-        override fun array(symbols: KneeSymbols): Array {
-            return Array(symbols, CodegenType.from(BOOLEAN_ARRAY), BooleanAsUByte(symbols))
-        }
+        override val jvmArray get() = CodegenType.from(BOOLEAN_ARRAY)
     }
 
     @Serializable
-    class Object private constructor(@Contextual override val kn: IrSimpleType, override val jvm: CodegenType) : Real {
-        constructor(symbols: KneeSymbols, jvm: CodegenType) : this(
-            kn = symbols.typeAliasUnwrapped(PlatformIds.jobject) as IrSimpleType,
-            jvm = jvm
-        )
-        fun array(symbols: KneeSymbols): Array {
-            return Array(symbols, CodegenType.from(ARRAY.parameterizedBy(jvm.name)), Object(symbols, jvm))
-        }
-    }
-
-    // Can be array of primitive or array of object
-    @Serializable
-    class Array private constructor(
+    class Object private constructor(
         @Contextual override val kn: IrSimpleType,
         override val jvm: CodegenType,
-        val element: Real
+        val arrayElement: Real?
     ) : Real {
-        constructor(symbols: KneeSymbols, jvm: CodegenType, element: Real) : this(
-            symbols.typeAliasUnwrapped(PlatformIds.jobjectArray) as IrSimpleType, jvm, element
+        constructor(symbols: KneeSymbols, jvm: CodegenType) : this(
+            kn = symbols.typeAliasUnwrapped(PlatformIds.jobject) as IrSimpleType,
+            jvm = jvm,
+            arrayElement = null
         )
+        // val isArray get() = arrayElement != null
+        override val jvmArray get() = CodegenType.from(ARRAY.parameterizedBy(jvm.name))
+        companion object {
+            fun array(symbols: KneeSymbols, jvm: CodegenType, element: Real) = Object(
+                kn = symbols.typeAliasUnwrapped(PlatformIds.jobjectArray) as IrSimpleType,
+                jvm = jvm,
+                arrayElement = element
+            )
+        }
     }
 }
