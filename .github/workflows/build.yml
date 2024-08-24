@@ -10,11 +10,6 @@ jobs:
   CHECK_DEPLOY:
     name: Deploy locally
     runs-on: ubuntu-latest
-    env:
-      GHUB_USER: ${{ secrets.GHUB_USER }}
-      GHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GHUB_PERSONAL_ACCESS_TOKEN }}
-      SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-      SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -27,11 +22,6 @@ jobs:
   CHECK_TESTS:
     name: Run emulator tests
     runs-on: ubuntu-latest
-    env:
-      GHUB_USER: ${{ secrets.GHUB_USER }}
-      GHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.GHUB_PERSONAL_ACCESS_TOKEN }}
-      SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-      SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

@@ -15,7 +15,7 @@ subprojects {
     // Publishing
     plugins.withId("io.deepmedia.tools.deployer") {
         extensions.configure<DeployerExtension> {
-            verbose.set(true)
+            verbose.set(providers.environmentVariable("CI").orElse("").map { it.isNotBlank() })
 
             projectInfo {
                 description.set("A Kotlin Compiler Plugin for seamless communication between Kotlin/Native and Kotlin/JVM.")
@@ -32,7 +32,9 @@ subprojects {
 
             // use "deployLocal" to deploy to local maven repository
             localSpec {
-                directory = rootProject.layout.buildDirectory.dir("inspect")
+                // directory = rootProject.layout.buildDirectory.dir("inspect")
+                signing.password = absent()
+                signing.key = absent()
             }
 
             // use "deploySonatype" to deploy to OSSRH / maven central
