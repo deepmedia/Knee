@@ -23,3 +23,12 @@ interface BaseInterfaceWithDefaultValues {
 @Knee
 fun emptyStringDefaultValue(foo: String = "") {
 }
+
+@Knee
+fun enumDefaultValue(foo: DefaultValuesEnum = DefaultValuesEnum.First) {
+}
+
+@KneeEnum
+enum class DefaultValuesEnum {
+    First, Second
+}
