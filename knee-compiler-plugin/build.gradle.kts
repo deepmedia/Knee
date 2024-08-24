@@ -11,6 +11,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
+kotlin {
+    target {
+        compilerOptions {
+            optIn.add("org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI")
+        }
+    }
+}
+
 // Annoying configuration needed because of https://youtrack.jetbrains.com/issue/KT-53477/
 // Compiler plugins can't have dependency in Native, unless we use a fat jar.
 tasks.shadowJar.configure {

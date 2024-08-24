@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
+import org.jetbrains.kotlin.config.CommonConfigurationKeys
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import java.io.File
 
@@ -12,7 +13,7 @@ import java.io.File
 class KneeComponentRegistrar : CompilerPluginRegistrar() {
     override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
         if (configuration[KneeCommandLineProcessor.KneeEnabled] == false) return
-        val logs = configuration[CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY]!!
+        val logs = configuration[CommonConfigurationKeys.MESSAGE_COLLECTOR_KEY]!!
         val verboseLogs = configuration[KneeCommandLineProcessor.KneeVerboseLogs] ?: false
         val verboseRuntime = configuration[KneeCommandLineProcessor.KneeVerboseRuntime] ?: false
         val verboseCodegen = configuration[KneeCommandLineProcessor.KneeVerboseSources] ?: false

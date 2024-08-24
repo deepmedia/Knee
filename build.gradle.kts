@@ -31,17 +31,19 @@ subprojects {
             }
 
             // use "deployLocal" to deploy to local maven repository
-            localSpec()
+            localSpec {
+                directory = rootProject.layout.buildDirectory.dir("inspect")
+            }
 
             // use "deploySonatype" to deploy to OSSRH / maven central
-            sonatypeSpec {
+            nexusSpec {
                 syncToMavenCentral = true
                 auth.user.set(secret("SONATYPE_USER"))
                 auth.password.set(secret("SONATYPE_PASSWORD"))
             }
 
             // use "deploySonatypeSnapshot" to deploy to sonatype snapshots repo
-            sonatypeSpec("snapshot") {
+            nexusSpec("snapshot") {
                 auth.user.set(secret("SONATYPE_USER"))
                 auth.password.set(secret("SONATYPE_PASSWORD"))
                 repositoryUrl.set(ossrhSnapshots1)
