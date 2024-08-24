@@ -23,5 +23,5 @@ jobs:
           java-version: 17
           distribution: temurin
           cache: gradle
-      - name: Publish sonatype snapshot
-        run: ./gradlew deploySonatypeSnapshot
+      - name: Publish Nexus Snapshot
+        run: ./gradlew deployNexusSnapshot

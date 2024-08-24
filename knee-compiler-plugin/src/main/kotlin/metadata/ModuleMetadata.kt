@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.ir.util.dumpKotlinLike
 import org.jetbrains.kotlin.ir.util.getAnnotation
 
 
+@ConsistentCopyVisibility
 @Serializable
 data class ModuleMetadata private constructor(
     @Contextual private val dependencyModules_: List<IrClass_>,
