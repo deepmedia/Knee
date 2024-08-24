@@ -2,14 +2,18 @@ package io.deepmedia.tools.knee.plugin.compiler.utils
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import io.deepmedia.tools.knee.plugin.compiler.codegen.CodegenType
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.IrConst
 import org.jetbrains.kotlin.ir.expressions.IrConstKind
 import org.jetbrains.kotlin.ir.expressions.IrExpressionBody
+import org.jetbrains.kotlin.ir.expressions.IrGetEnumValue
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
+import org.jetbrains.kotlin.ir.symbols.IrEnumEntrySymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.types.*
+import org.jetbrains.kotlin.ir.util.dump
 import org.jetbrains.kotlin.types.Variance
 
 
@@ -212,8 +216,12 @@ fun IrValueParameter.defaultValueForCodegen(functionExpects: List<IrDeclarationW
             // is IrConstKind.Long -> CodeBlock.of(kind.valueOf(expression).toString() + "L")
             // else -> return null
         }
+    } else if (expression is IrGetEnumValue && type is IrSimpleType) {
+        // No need to check whether the type is serializable, that would throw an error somewhere else
+        val type: TypeName = (type as IrSimpleType).asTypeName()
+        val entry: String = expression.symbol.owner.name.asString()
+        return CodeBlock.of("%T.%N", type, entry)
     }
-    // risky option: take expression.dumpKotlinLike() as string.
     return null
 }
 

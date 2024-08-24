@@ -26,4 +26,9 @@ class DefaultValuesTests {
         emptyStringDefaultValue()
     }
 
+    @Test
+    fun testDefaultValue_enum() {
+        enumDefaultValue()
+    }
+
 }
