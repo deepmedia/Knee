@@ -3,7 +3,7 @@
 plugins {
     kotlin("multiplatform") version "2.0.20"
     id("com.android.application") version "8.1.1"
-    id("io.deepmedia.tools.knee") version "0.3.0-SNAPSHOT"
+    id("io.deepmedia.tools.knee") version "1.0.0"
 }
 
 configurations.configureEach {
