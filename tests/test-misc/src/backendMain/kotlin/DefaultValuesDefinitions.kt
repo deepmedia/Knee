@@ -25,6 +25,14 @@ fun emptyStringDefaultValue(foo: String = "") {
 }
 
 @Knee
+fun floatDefaultValue(foo: Float = 1F) {
+}
+
+@Knee
+fun longDefaultValue(foo: Long = 1000L) {
+}
+
+@Knee
 fun enumDefaultValue(foo: DefaultValuesEnum = DefaultValuesEnum.First) {
 }
 

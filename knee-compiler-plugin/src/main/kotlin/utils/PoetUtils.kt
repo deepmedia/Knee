@@ -208,12 +208,12 @@ fun IrValueParameter.defaultValueForCodegen(functionExpects: List<IrDeclarationW
         return when (val kind = expression.kind) {
             is IrConstKind.Null -> CodeBlock.of("null")
             is IrConstKind.String -> CodeBlock.of("%S", kind.valueOf(expression))
+            is IrConstKind.Float -> CodeBlock.of("%LF", kind.valueOf(expression))
+            is IrConstKind.Long -> CodeBlock.of("%LL", kind.valueOf(expression))
             else -> CodeBlock.of("%L", kind.valueOf(expression))
             // is IrConstKind.Boolean -> CodeBlock.of(kind.valueOf(expression).toString())
             // is IrConstKind.Int -> CodeBlock.of(kind.valueOf(expression).toString())
             // is IrConstKind.Double -> CodeBlock.of(kind.valueOf(expression).toString())
-            // is IrConstKind.Float -> CodeBlock.of(kind.valueOf(expression).toString() + "F")
-            // is IrConstKind.Long -> CodeBlock.of(kind.valueOf(expression).toString() + "L")
             // else -> return null
         }
     } else if (expression is IrGetEnumValue && type is IrSimpleType) {
