@@ -31,4 +31,14 @@ class DefaultValuesTests {
         enumDefaultValue()
     }
 
+    @Test
+    fun testDefaultValue_float() {
+        floatDefaultValue()
+    }
+
+    @Test
+    fun testDefaultValue_long() {
+        floatDefaultValue()
+    }
+
 }
