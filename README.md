@@ -23,7 +23,7 @@ pluginManagement {
 
 // build.gradle.kts
 plugins {
-    id("io.deepmedia.tools.knee") version "1.1.0"
+    id("io.deepmedia.tools.knee") version "1.1.1"
 }
 ```
 
