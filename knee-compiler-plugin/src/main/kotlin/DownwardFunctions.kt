@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.backend.common.lower.irCatch
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.builders.declarations.addValueParameter
 import org.jetbrains.kotlin.ir.builders.declarations.buildVariable
-import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
@@ -59,7 +58,16 @@ private fun KneeDownwardFunction.makeCodegen(codegen: KneeCodegen, signature: Do
                 if (source.isSuspend) {
                     addModifiers(KModifier.SUSPEND)
                 }
-                if (kind is Kind.InterfaceMember || (source as? IrSimpleFunction)?.overriddenSymbols?.isNotEmpty() == true) {
+                // Needs override: (source as? IrSimpleFunction)?.overriddenSymbols?.isNotEmpty() == true
+                // But the JVM hierarchy doesn't match the KN hierarchy, supertypes may be missing, so this needs to be treated differently.
+                // Could merge this logic with that of DownwardProperties
+                val isOverride = when {
+                    kind is Kind.InterfaceMember -> true
+                    source !is IrSimpleFunction -> false
+                    source.overriddenSymbols.any { it.owner.parentClassOrNull?.defaultType?.isAny() == true } -> true // toString(), equals() or hashCode()
+                    else -> false
+                }
+                if (isOverride) {
                     addModifiers(KModifier.OVERRIDE)
                 }
             }
