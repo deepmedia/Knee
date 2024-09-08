@@ -22,9 +22,11 @@ import org.jetbrains.kotlin.backend.common.lower.irCatch
 import org.jetbrains.kotlin.ir.builders.*
 import org.jetbrains.kotlin.ir.builders.declarations.addValueParameter
 import org.jetbrains.kotlin.ir.builders.declarations.buildVariable
+import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
+import org.jetbrains.kotlin.ir.types.isAny
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.Name
 
@@ -57,7 +59,7 @@ private fun KneeDownwardFunction.makeCodegen(codegen: KneeCodegen, signature: Do
                 if (source.isSuspend) {
                     addModifiers(KModifier.SUSPEND)
                 }
-                if (kind is Kind.InterfaceMember) {
+                if (kind is Kind.InterfaceMember || (source as? IrSimpleFunction)?.overriddenSymbols?.isNotEmpty() == true) {
                     addModifiers(KModifier.OVERRIDE)
                 }
             }
@@ -67,7 +69,11 @@ private fun KneeDownwardFunction.makeCodegen(codegen: KneeCodegen, signature: Do
         // Add it unless getter or setter or constructor because KotlinPoet will throw in this case
         // E.g. 'IllegalStateException: get() cannot have a return type'
         signature.result.let {
-            if (!source.isGetter && !source.isSetter && kind !is Kind.ClassConstructor) {
+            val needsExplicitReturnType = when (kind) {
+                is Kind.ClassConstructor -> false
+                is Kind.TopLevel, is Kind.ClassMember, is Kind.InterfaceMember, is Kind.ObjectMember -> true
+            }
+            if (!source.isGetter && !source.isSetter && needsExplicitReturnType) {
                 returns(it.localCodegenType.name)
             }
         }

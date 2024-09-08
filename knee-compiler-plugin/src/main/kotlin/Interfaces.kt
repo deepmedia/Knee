@@ -22,7 +22,7 @@ import io.deepmedia.tools.knee.plugin.compiler.import.concrete
 import io.deepmedia.tools.knee.plugin.compiler.import.writableParent
 import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen
 import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen.addHandleConstructorAndField
-import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen.addObjectOverrides
+import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen.addAnyOverrides
 import io.deepmedia.tools.knee.plugin.compiler.symbols.CInteropIds
 import io.deepmedia.tools.knee.plugin.compiler.utils.*
 import io.deepmedia.tools.knee.plugin.compiler.symbols.RuntimeIds.decodeInterface
@@ -133,7 +133,7 @@ private fun KneeInterface.makeCodegenImplementation(codegen: KneeCodegen, contex
         if (codegen.verbose) addKdoc("knee:interfaces:impl")
         addSuperinterface(source.defaultType.concrete(importInfo).asTypeName())
         addHandleConstructorAndField(false)
-        addObjectOverrides(codegen.verbose)
+        addAnyOverrides(codegen.verbose)
     }
     codegenImplementation = CodegenClass(builder).apply {
         container.addChild(this)

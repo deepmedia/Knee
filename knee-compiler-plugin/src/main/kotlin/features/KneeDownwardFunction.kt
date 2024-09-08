@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.ir.util.*
 
 class KneeDownwardFunction(
     source: IrFunction,
-    parentInstance: KneeFeature<*>?, // class or interface
+    parentInstance: KneeFeature<*>?, // class or interface or object
     parentProperty: KneeDownwardProperty?
 ) : KneeFeature<IrFunction>(source, "Knee") {
 
@@ -24,9 +24,13 @@ class KneeDownwardFunction(
 
         class InterfaceMember(val owner: KneeInterface, property: KneeDownwardProperty?) : Kind(property)
 
+        class ObjectMember(val owner: KneeObject, property: KneeDownwardProperty?) : Kind(property)
+
         val importInfo: ImportInfo? get() = when (this) {
-            is TopLevel, is ClassConstructor, is ClassMember -> null
+            is TopLevel -> null
+            is ClassConstructor, is ClassMember -> null // TODO: why?
             is InterfaceMember -> owner.importInfo
+            is ObjectMember -> owner.importInfo
         }
     }
 
@@ -43,6 +47,11 @@ class KneeDownwardFunction(
                 && source.parent is IrClass
                 && source.parentAsClass.kind == ClassKind.INTERFACE -> {
             Kind.InterfaceMember(parentInstance as KneeInterface, parentProperty)
+        }
+        source.dispatchReceiverParameter != null
+                && source.parent is IrClass
+                && source.parentAsClass.kind == ClassKind.OBJECT -> {
+            Kind.ObjectMember(parentInstance as KneeObject, parentProperty)
         }
         else -> error("$this must be top level, a class constructor, a class destructor or a class member.")
     }

@@ -13,7 +13,7 @@ import io.deepmedia.tools.knee.plugin.compiler.codec.Codec
 import io.deepmedia.tools.knee.plugin.compiler.export.v1.ExportAdapters
 import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen
 import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen.addHandleConstructorAndField
-import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen.addObjectOverrides
+import io.deepmedia.tools.knee.plugin.compiler.instances.InstancesCodegen.addAnyOverrides
 import io.deepmedia.tools.knee.plugin.compiler.symbols.RuntimeIds.decodeClass
 import io.deepmedia.tools.knee.plugin.compiler.symbols.RuntimeIds.encodeClass
 import io.deepmedia.tools.knee.plugin.compiler.utils.asModifier
@@ -62,7 +62,7 @@ private fun KneeClass.makeCodegen(codegen: KneeCodegen) {
         if (codegen.verbose) spec.addKdoc("knee:classes")
         spec.addModifiers(source.visibility.asModifier())
         spec.addHandleConstructorAndField(preserveSymbols = isThrowable) // for exception handling
-        spec.addObjectOverrides(codegen.verbose)
+        spec.addAnyOverrides(codegen.verbose)
         if (isThrowable) {
             spec.superclass(THROWABLE)
         }

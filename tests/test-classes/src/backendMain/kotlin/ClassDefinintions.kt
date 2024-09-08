@@ -2,7 +2,6 @@ package io.deepmedia.tools.knee.tests
 
 import io.deepmedia.tools.knee.annotations.*
 import io.deepmedia.tools.knee.runtime.*
-import kotlin.native.identityHashCode
 import kotlin.random.Random
 import kotlin.random.nextUInt
 

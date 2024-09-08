@@ -37,7 +37,7 @@ object InstancesCodegen {
                 .build())
     }
 
-    fun TypeSpec.Builder.addObjectOverrides(verbose: Boolean) {
+    fun TypeSpec.Builder.addAnyOverrides(verbose: Boolean) {
         val pkg = "io.deepmedia.tools.knee.runtime.compiler"
         val type = this.build().name!!
         addFunction(FunSpec.builder("finalize")

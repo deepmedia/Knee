@@ -92,7 +92,13 @@ class DownwardFunctionSignature(source: IrFunction, kind: Kind, context: KneeCon
 
     val extraParameters: List<Pair<Name, Codec>> = buildList {
         // instance member functions should pass the handle reference so that we can decode them in IR.
-        if (kind is Kind.ClassMember || kind is Kind.InterfaceMember) {
+        // Note that this is NOT strictly needed for ObjectMember, but doing so would complicate code
+        // in other parts of the plugin (DownwardFunctionsIr would need to handle this case specifically)
+        val needsReceiverInstance = when (kind) {
+            is Kind.ClassMember, is Kind.InterfaceMember, is Kind.ObjectMember -> true
+            is Kind.ClassConstructor, is Kind.TopLevel -> false
+        }
+        if (needsReceiverInstance) {
             add(Extra.ReceiverInstance to context.mapper.get(source.parentAsClass.thisReceiver!!.type.simple("DownwardSignature.extraParams").concrete(kind.importInfo)))
         }
         // suspend functions should pass the 'continuation'. It is an instance of KneeSuspendInvoker<RawResultType>
@@ -135,10 +141,8 @@ class DownwardFunctionSignature(source: IrFunction, kind: Kind, context: KneeCon
         // jobject or jclass depending on static vs instance function. In practice this won't make
         // any difference because jclass is a typealias for jobject, but whatever.
         add(KnPrefix.JniObjectOrClass to context.symbols.typeAliasUnwrapped(when (kind) {
-            is Kind.TopLevel,
-            is Kind.ClassConstructor -> PlatformIds.jobject
-            is Kind.ClassMember -> PlatformIds.jclass
-            is Kind.InterfaceMember -> PlatformIds.jclass
+            is Kind.TopLevel, is Kind.ClassConstructor -> PlatformIds.jobject
+            is Kind.ClassMember, is Kind.ObjectMember, is Kind.InterfaceMember -> PlatformIds.jclass
         }))
     }
 
@@ -205,6 +209,7 @@ class DownwardFunctionSignature(source: IrFunction, kind: Kind, context: KneeCon
             when (kind) {
                 is Kind.InterfaceMember -> kind.owner.codegenImplementation.type
                 is Kind.ClassMember -> kind.owner.codegenClone.type
+                is Kind.ObjectMember -> kind.owner.codegenClone.type
                 is Kind.ClassConstructor -> {
                     // Technically for constructors we codegen in the companion object, but it makes no difference
                     // from the JVM perspective, it's a function inside the owner class.
@@ -228,6 +233,7 @@ class DownwardFunctionSignature(source: IrFunction, kind: Kind, context: KneeCon
             fun mapper(name: String): String = "$" + when (kind) {
                 is Kind.TopLevel,
                 is Kind.ClassMember,
+                is Kind.ObjectMember,
                 is Kind.InterfaceMember -> listOfNotNull(prefix, name, suffix).joinToString(separator = "_")
                 is Kind.ClassConstructor -> {
                     // standard name for constructors is <init> for all of them, so we must make it unique in some way.
