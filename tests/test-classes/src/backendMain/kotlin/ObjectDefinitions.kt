@@ -7,7 +7,7 @@ import kotlin.random.nextUInt
 
 @KneeObject
 object TopLevelObject {
-    var value: Int = 0
+    @Knee var value: Int = 0
     @Knee fun reset() { value = 0 }
     @Knee fun increment() { value += 1 }
     @Knee fun decrement() { value -= 1 }

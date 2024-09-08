@@ -25,13 +25,20 @@ class ObjectTests {
     }
 
     @Test
-    fun testTopLevel_modify() {
+    fun testTopLevel_functions() {
         TopLevelObject.reset()
         TopLevelObject.increment()
         TopLevelObject.increment()
         check(TopLevelObject.toString() == "TopLevelObject(2)") { TopLevelObject.toString() }
         TopLevelObject.decrement()
         check(TopLevelObject.toString() == "TopLevelObject(1)") { TopLevelObject.toString() }
+    }
+
+    @Test
+    fun testTopLevel_property() {
+        TopLevelObject.reset()
+        TopLevelObject.value = 15
+        check(TopLevelObject.value == 15) { TopLevelObject.value }
     }
 
 }
