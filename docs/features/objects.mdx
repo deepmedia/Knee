@@ -1,0 +1,52 @@
+---
+title: Objects
+description: >
+  Understand how Knee compiler plugin can serialize declared objects and let you pass them from Kotlin Native
+  to the JVM and vice versa, including support for externally defined objects.
+---
+
+# Objects
+
+## Annotating objects
+
+Whenever you declare an object, you can use the `@KneeObject` annotation to tell the compiler that it should be processed.
+Knee supports objects in different scenarios:
+
+- top level objects
+- objects nested inside another declaration
+- `companion` objects
+
+```kotlin
+@KneeObject object Foo {
+    ...
+}
+
+class Utilities {
+    @KneeObject object Bar { ... }
+    @KneeObject companion object { ... }
+}
+```
+
+Under the hood, objects are *not* actually serialized and passed through the JNI interface: since there can only be a single
+instance of an object, no extra information is needed and the compiler can retrieve the object field statically on both
+platforms.
+
+## Annotating members
+
+All callable members (functions, properties, constructors) of an object can be made available to the JVM side, but
+they must be explicitly marked with the `@Knee` annotation as described in the [callables](callables) documentation.
+
+```kotlin
+@KneeObject object Game {
+    @Knee fun start() { ... }
+    fun loop() { ... }
+}
+```
+
+In the example above, only the `start` function will be available on the JVM side.
+
+## Importing objects
+
+If you wish to annotate existing objects that you don't control, for example those coming from a different module,
+you can technically use `@KneeObject` on type aliases. Unfortunately as of now, this functionality is very limited in that you
+can't choose which declarations will be imported.
