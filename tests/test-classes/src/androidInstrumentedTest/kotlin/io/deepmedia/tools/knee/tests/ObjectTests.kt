@@ -41,4 +41,16 @@ class ObjectTests {
         check(TopLevelObject.value == 15) { TopLevelObject.value }
     }
 
+    @Test
+    fun testInner_property() {
+        ObjectParent.InnerObject.value = 15
+        check(ObjectParent.InnerObject.value == 15) { ObjectParent.InnerObject.value }
+    }
+
+    @Test
+    fun testCompanion_property() {
+        ObjectParent.value = 15
+        check(ObjectParent.value == 15) { ObjectParent.value }
+    }
+
 }

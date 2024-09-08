@@ -13,3 +13,13 @@ object TopLevelObject {
     @Knee fun decrement() { value -= 1 }
     @Knee override fun toString(): String = "TopLevelObject($value)"
 }
+
+class ObjectParent {
+    @KneeObject object InnerObject {
+        @Knee var value: Int = 0
+    }
+
+    @KneeObject companion object {
+        @Knee var value: Int = 0
+    }
+}

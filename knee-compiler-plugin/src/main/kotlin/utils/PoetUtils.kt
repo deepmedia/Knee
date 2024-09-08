@@ -22,7 +22,10 @@ fun IrClass.asTypeSpec(rename: ((String) -> String)? = null): TypeSpec.Builder {
     val name = codegenName.map { rename?.invoke(it) ?: it }.asString()
     return when (kind) {
         ClassKind.ENUM_CLASS -> TypeSpec.enumBuilder(name)
-        ClassKind.OBJECT -> TypeSpec.objectBuilder(name)
+        ClassKind.OBJECT -> when {
+            isCompanion -> TypeSpec.companionObjectBuilder(if (name == "Companion") null else name)
+            else -> TypeSpec.objectBuilder(name)
+        }
         ClassKind.INTERFACE -> TypeSpec.interfaceBuilder(name)
         ClassKind.ANNOTATION_CLASS -> TypeSpec.annotationBuilder(name)
         ClassKind.ENUM_ENTRY -> error("Enum entries ($this) can't become a TypeSpec.")
