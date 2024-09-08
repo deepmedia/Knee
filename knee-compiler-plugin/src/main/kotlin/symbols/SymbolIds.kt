@@ -25,6 +25,7 @@ object AnnotationIds {
     val Knee =          FqName("io.deepmedia.tools.knee.annotations.Knee")
     val KneeEnum =      FqName("io.deepmedia.tools.knee.annotations.KneeEnum")
     val KneeClass =     FqName("io.deepmedia.tools.knee.annotations.KneeClass")
+    val KneeObject =    FqName("io.deepmedia.tools.knee.annotations.KneeObject")
     val KneeInterface = FqName("io.deepmedia.tools.knee.annotations.KneeInterface")
     val KneeRaw =       FqName("io.deepmedia.tools.knee.annotations.KneeRaw")
 }
