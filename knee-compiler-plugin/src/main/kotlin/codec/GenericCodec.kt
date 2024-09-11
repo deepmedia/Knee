@@ -18,6 +18,9 @@ import org.jetbrains.kotlin.ir.expressions.IrExpression
  *
  * It's very useful when type is not known as in generics - in many cases we want to
  * know the function signature so we need a fixed [JniType]. This is what this does.
+ *
+ * Note that this only works thanks to some inner codec passed to the constructor,
+ * so the generic type is reified.
  */
 class GenericCodec(
     private val symbols: KneeSymbols,

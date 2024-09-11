@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.ir.builders.declarations.buildVariable
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
+import org.jetbrains.kotlin.ir.types.isAny
 import org.jetbrains.kotlin.ir.util.*
 import org.jetbrains.kotlin.name.Name
 
@@ -57,7 +58,16 @@ private fun KneeDownwardFunction.makeCodegen(codegen: KneeCodegen, signature: Do
                 if (source.isSuspend) {
                     addModifiers(KModifier.SUSPEND)
                 }
-                if (kind is Kind.InterfaceMember) {
+                // Needs override: (source as? IrSimpleFunction)?.overriddenSymbols?.isNotEmpty() == true
+                // But the JVM hierarchy doesn't match the KN hierarchy, supertypes may be missing, so this needs to be treated differently.
+                // Could merge this logic with that of DownwardProperties
+                val isOverride = when {
+                    kind is Kind.InterfaceMember -> true
+                    source !is IrSimpleFunction -> false
+                    source.overriddenSymbols.any { it.owner.parentClassOrNull?.defaultType?.isAny() == true } -> true // toString(), equals() or hashCode()
+                    else -> false
+                }
+                if (isOverride) {
                     addModifiers(KModifier.OVERRIDE)
                 }
             }
@@ -67,7 +77,11 @@ private fun KneeDownwardFunction.makeCodegen(codegen: KneeCodegen, signature: Do
         // Add it unless getter or setter or constructor because KotlinPoet will throw in this case
         // E.g. 'IllegalStateException: get() cannot have a return type'
         signature.result.let {
-            if (!source.isGetter && !source.isSetter && kind !is Kind.ClassConstructor) {
+            val needsExplicitReturnType = when (kind) {
+                is Kind.ClassConstructor -> false
+                is Kind.TopLevel, is Kind.ClassMember, is Kind.InterfaceMember, is Kind.ObjectMember -> true
+            }
+            if (!source.isGetter && !source.isSetter && needsExplicitReturnType) {
                 returns(it.localCodegenType.name)
             }
         }

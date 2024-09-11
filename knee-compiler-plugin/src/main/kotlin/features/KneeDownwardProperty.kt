@@ -13,11 +13,13 @@ class KneeDownwardProperty(
     sealed class Kind {
         class InterfaceMember(val owner: KneeInterface) : Kind()
         class ClassMember(val owner: KneeClass) : Kind()
+        class ObjectMember(val owner: KneeObject) : Kind()
         object TopLevel : Kind()
 
         val importInfo: ImportInfo? get() = when (this) {
             TopLevel -> null
             is ClassMember -> owner.importInfo
+            is ObjectMember -> owner.importInfo
             is InterfaceMember -> owner.importInfo
         }
     }
@@ -25,9 +27,10 @@ class KneeDownwardProperty(
     val kind = when (parentInstance) {
         is KneeInterface -> Kind.InterfaceMember(parentInstance)
         is KneeClass -> Kind.ClassMember(parentInstance)
-        else -> Kind.TopLevel
+        is KneeObject -> Kind.ObjectMember(parentInstance)
+        null -> Kind.TopLevel
+        else -> error("Unsupported parent instance: $parentInstance")
     }
-
 
     val setter: KneeDownwardFunction? = source.setter?.let {
         it.copyAnnotationsFrom(source)

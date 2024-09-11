@@ -69,21 +69,23 @@ class KneeClass(
         return propertyOverriddenSymbols.any { it in throwableSymbols }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T: IrOverridableDeclaration<*>> T.findAnnotatedParentRecursive(annotation: FqName): T? {
-        return overriddenSymbols.asSequence().map {
-            val t = it.owner as T
-            if (t.hasAnnotation(annotation)) return@map t
-            t.findAnnotatedParentRecursive(annotation)
-        }.firstOrNull { it != null }
-    }
-
-    private fun <T: IrOverridableDeclaration<*>> T.hasAnnotationCopyingFromParents(annotation: FqName): Boolean {
-        if (hasAnnotation(annotation)) return true
-        val parent = findAnnotatedParentRecursive(annotation) ?: return false
-        copyAnnotationsFrom(parent)
-        return true
-    }
-
     lateinit var codegenClone: CodegenClass
+
+    companion object {
+        @Suppress("UNCHECKED_CAST")
+        private fun <T: IrOverridableDeclaration<*>> T.findAnnotatedParentRecursive(annotation: FqName): T? {
+            return overriddenSymbols.asSequence().map {
+                val t = it.owner as T
+                if (t.hasAnnotation(annotation)) return@map t
+                t.findAnnotatedParentRecursive(annotation)
+            }.firstOrNull { it != null }
+        }
+
+        fun <T: IrOverridableDeclaration<*>> T.hasAnnotationCopyingFromParents(annotation: FqName): Boolean {
+            if (hasAnnotation(annotation)) return true
+            val parent = findAnnotatedParentRecursive(annotation) ?: return false
+            copyAnnotationsFrom(parent)
+            return true
+        }
+    }
 }

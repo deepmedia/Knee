@@ -65,10 +65,12 @@ private fun process(context: KneeContext, codegen: KneeCodegen) {
     context.log.logMessage("[*] Preprocessing target:${context.module.name} platform:${context.plugin.platform}")
     data.allInterfaces.processEach(context) { preprocessInterface(it, context) }
     data.allClasses.processEach(context) { preprocessClass(it, context) }
+    data.allObjects.processEach(context) { preprocessObject(it, context) }
 
     context.log.logMessage("[*] Processing target:${context.module.name} platform:${context.plugin.platform}")
     data.allEnums.processEach(context) { processEnum(it, context, codegen) }
     data.allClasses.processEach(context) { processClass(it, context, codegen, initInfo) }
+    data.allObjects.processEach(context) { processObject(it, context, codegen) }
     data.allInterfaces.processEach(context) { processInterface(it, context, codegen, initInfo) }
     data.allUpwardProperties.processEach(context) { processUpwardProperty(it, context) }
     data.allDownwardProperties.processEach(context) { processDownwardProperty(it, context, codegen) }

@@ -48,6 +48,13 @@ annotation class KneeClass(val name: String = "")
     AnnotationTarget.TYPEALIAS
 )
 @Retention(AnnotationRetention.BINARY)
+annotation class KneeObject(val name: String = "")
+
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.TYPEALIAS
+)
+@Retention(AnnotationRetention.BINARY)
 annotation class KneeInterface(val name: String = "")
 
 @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.FUNCTION)

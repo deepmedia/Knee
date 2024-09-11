@@ -23,31 +23,31 @@ class KneeCollector(module: IrModuleFragment) : IrElementVisitorVoid {
     private val classes = mutableListOf<KneeClass>()
     private val enums = mutableListOf<KneeEnum>()
     private val interfaces = mutableListOf<KneeInterface>()
+    private val objects = mutableListOf<KneeObject>()
 
     private val importedClasses = mutableListOf<KneeClass>()
     private val importedEnums = mutableListOf<KneeEnum>()
     private val importedInterfaces = mutableListOf<KneeInterface>()
+    private val importedObjects = mutableListOf<KneeObject>()
 
     // private val imports = mutableListOf<KneeImport>()
     private val topLevelDownwardFunctions = mutableListOf<KneeDownwardFunction>()
     private val topLevelDownwardProperties = mutableListOf<KneeDownwardProperty>()
 
     val allInterfaces get() = interfaces + importedInterfaces
-            // + imports.flatMap { it.interfaces }
-
     val allEnums get() = enums + importedEnums
-            // + imports.flatMap { it.enums }
-
     val allClasses get() = classes + importedClasses
-            // + imports.flatMap { it.classes }
+    val allObjects get() = objects + importedObjects
 
     val allDownwardProperties get() = topLevelDownwardProperties +
             allClasses.flatMap { it.properties } +
+            allObjects.flatMap { it.properties } +
             allInterfaces.flatMap { it.downwardProperties }
 
     val allDownwardFunctions get() = topLevelDownwardFunctions +
             allDownwardProperties.flatMap { it.functions } +
             allClasses.flatMap { it.functions } +
+            allObjects.flatMap { it.functions } +
             allInterfaces.flatMap { it.downwardFunctions }
 
     val allUpwardProperties get() =
@@ -57,7 +57,8 @@ class KneeCollector(module: IrModuleFragment) : IrElementVisitorVoid {
         allUpwardProperties.flatMap { it.functions } +
         allInterfaces.flatMap { it.upwardFunctions }
 
-    private val KneeClass.functions get() = constructors + members //  + disposer
+    private val KneeClass.functions get() = constructors + members
+    private val KneeObject.functions get() = members
     private val KneeDownwardProperty.functions get() = listOfNotNull(getter, setter)
     private val KneeUpwardProperty.functions get() = listOfNotNull(getter, setter)
 
@@ -117,18 +118,19 @@ class KneeCollector(module: IrModuleFragment) : IrElementVisitorVoid {
     }
 
     override fun visitTypeAlias(declaration: IrTypeAlias) {
+        fun importInfo() = ImportInfo(declaration.expandedType.simple("visitTypeAlias"), declaration)
         if (declaration.hasAnnotation(AnnotationIds.KneeEnum)) {
             hasDeclarations = true
-            val importInfo = ImportInfo(declaration.expandedType.simple("visitTypeAlias"), declaration)
-            importedEnums.add(KneeEnum(declaration.expandedType.classOrFail.owner, importInfo))
+            importedEnums.add(KneeEnum(declaration.expandedType.classOrFail.owner, importInfo()))
         } else if (declaration.hasAnnotation(AnnotationIds.KneeClass)) {
             hasDeclarations = true
-            val importInfo = ImportInfo(declaration.expandedType.simple("visitTypeAlias"), declaration)
-            importedClasses.add(KneeClass(declaration.expandedType.classOrFail.owner, importInfo))
+            importedClasses.add(KneeClass(declaration.expandedType.classOrFail.owner, importInfo()))
+        } else if (declaration.hasAnnotation(AnnotationIds.KneeObject)) {
+            hasDeclarations = true
+            importedObjects.add(KneeObject(declaration.expandedType.classOrFail.owner, importInfo()))
         } else if (declaration.hasAnnotation(AnnotationIds.KneeInterface)) {
             hasDeclarations = true
-            val importInfo = ImportInfo(declaration.expandedType.simple("visitTypeAlias"), declaration)
-            importedInterfaces.add(KneeInterface(declaration.expandedType.classOrFail.owner, importInfo))
+            importedInterfaces.add(KneeInterface(declaration.expandedType.classOrFail.owner, importInfo()))
         }
         super.visitTypeAlias(declaration)
     }
@@ -140,6 +142,9 @@ class KneeCollector(module: IrModuleFragment) : IrElementVisitorVoid {
         } else if (declaration.hasAnnotation(AnnotationIds.KneeClass)) {
             hasDeclarations = true
             classes.add(KneeClass(declaration))
+        } else if (declaration.hasAnnotation(AnnotationIds.KneeObject)) {
+            hasDeclarations = true
+            objects.add(KneeObject(declaration))
         } else if (declaration.hasAnnotation(AnnotationIds.KneeInterface)) {
             hasDeclarations = true
             interfaces.add(KneeInterface(declaration))

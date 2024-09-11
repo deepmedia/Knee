@@ -21,6 +21,11 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 @Suppress("unused")
 class KneePlugin : KotlinCompilerPluginSupportPlugin {
 
+    companion object {
+        @Suppress("ConstPropertyName")
+        const val Version = KneeVersion
+    }
+
     override fun apply(target: Project) {
         val knee = target.extensions.create("knee", KneeExtension::class.java)
         knee.projectName = target.name
