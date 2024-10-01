@@ -26,14 +26,14 @@ class KneeLogger(
     }
 
     private var printlnIr: IrSimpleFunctionSymbol? = null
-    private val printlnCodegen = MemberName("kotlin", "println")
+    private val printlnCodegen = MemberName("kotlin.io", "println")
 
     fun injectLog(scope: IrStatementsBuilder<*>, message: String) {
         if (!verboseRuntime) return
 
         if (printlnIr == null) {
             val builtIns = (scope.parent as IrDeclaration).file.module.irBuiltins
-            val function = builtIns.findFunctions(Name.identifier("println"), "kotlin", "export")
+            val function = builtIns.findFunctions(Name.identifier("println"), "kotlin", "io")
             printlnIr = function.single { it.owner.valueParameters.firstOrNull()?.type == builtIns.stringType }
         }
 
@@ -43,7 +43,6 @@ class KneeLogger(
             }
         }
     }
-
 
     fun injectLog(scope: CodeBlock.Builder, message: String) {
         if (!verboseRuntime) return
