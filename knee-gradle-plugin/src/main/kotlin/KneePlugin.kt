@@ -24,6 +24,8 @@ class KneePlugin : KotlinCompilerPluginSupportPlugin {
     companion object {
         @Suppress("ConstPropertyName")
         const val Version = KneeVersion
+        @Suppress("ConstPropertyName")
+        const val Group = KneeGroup
     }
 
     override fun apply(target: Project) {
