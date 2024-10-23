@@ -42,6 +42,9 @@ internal open class JvmInterfaceWrapper<T: Any>(
     private val toString: jmethodID
     init {
         val jclass = ClassIds.get(environment, interfaceFqn)
+        // Got errors on API22 here: equals can't be found on interfaces and even worse, when it throws NoSuchMethodError and
+        // we try to create KneeJvmExceptionToken, instantiating it fails - instantiating any class extending throwable fails.
+        // Not sure if these are fixed and whether they are API level dependent.
         equals = MethodIds.get(environment, interfaceFqn, "equals", "(Ljava/lang/Object;)Z", false, jclass)
         hashCode = MethodIds.get(environment, interfaceFqn, "hashCode", "()I", false, jclass)
         toString = MethodIds.get(environment, interfaceFqn, "toString", "()Ljava/lang/String;", false, jclass)

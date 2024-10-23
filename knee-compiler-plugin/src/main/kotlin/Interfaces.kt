@@ -176,6 +176,10 @@ private fun KneeInterface.makeIrImplementationContents(context: KneeContext) {
         constructor.valueParameters += superConstructor.valueParameters[1].copyTo(constructor, defaultValue = null) // 1: jobject
         constructor.body = with(DeclarationIrBuilder(context.plugin, constructor.symbol)) {
             irBlockBody {
+                context.log.injectLog(this, "Calling super constructor")
+                // context.log.injectLog(this, CodegenType.from(sourceConcreteType).jvmClassName)
+                // context.log.injectLog(this, CodegenType.from(irImplementation.defaultType).jvmClassName)
+
                 +irDelegatingConstructorCall(superConstructor).apply {
                     putValueArgument(0, irGet(constructor.valueParameters[0]))
                     putValueArgument(1, irGet(constructor.valueParameters[1]))
@@ -197,6 +201,7 @@ private fun KneeInterface.makeIrImplementationContents(context: KneeContext) {
                         }
                     ))
                 }
+                context.log.injectLog(this, "Called super constructor, init self")
                 +IrInstanceInitializerCallImpl(startOffset, endOffset, irImplementation.symbol, context.symbols.builtIns.unitType)
             }
         }
@@ -274,6 +279,8 @@ class InterfaceCodec(
                 returnType = interfaceImplClass.defaultType,
                 content = {
                     irContext.logger.injectLog(this, "$logPrefix INSTANTIATING the implementation class")
+                    // irContext.logger.injectLog(this, irContext.environment)
+                    // irContext.logger.injectLog(this, jni)
                     +irReturn(irCallConstructor(interfaceImplClass.primaryConstructor!!.symbol, emptyList()).apply {
                         putValueArgument(0, irGet(irContext.environment)) // environment
                         putValueArgument(1, irGet(jni)) // jobject
